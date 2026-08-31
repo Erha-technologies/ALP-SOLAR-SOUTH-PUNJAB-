@@ -28,9 +28,9 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
           <Image
             src={siteConfig.logoUrl}
             alt={siteConfig.companyName}
-            width={300}
-            height={100}
-            className="h-16 sm:h-20 w-auto object-contain"
+            width={360}
+            height={120}
+            className="h-20 sm:h-24 w-auto object-contain"
           />
           <button
             type="button"

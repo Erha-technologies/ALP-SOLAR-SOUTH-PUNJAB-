@@ -29,9 +29,9 @@ export function Navbar() {
             <Image
               src={siteConfig.logoUrl}
               alt={siteConfig.companyName}
-              width={340}
-              height={110}
-              className="h-14 sm:h-18 lg:h-20 w-auto max-h-20 object-contain transition-transform hover:scale-105"
+              width={420}
+              height={140}
+              className="h-16 sm:h-22 lg:h-24 w-auto max-h-24 object-contain transition-transform hover:scale-105"
               priority
             />
           </Link>

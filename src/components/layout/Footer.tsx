@@ -44,13 +44,13 @@ export function Footer() {
 
       <div className="container-page relative z-10 grid gap-12 py-16 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
         <div>
-          <div className="inline-block rounded-lg bg-white px-4 py-3 shadow-md">
+          <div className="inline-block rounded-xl bg-white p-4 shadow-md">
             <Image
               src={siteConfig.logoUrl}
               alt={siteConfig.companyName}
-              width={260}
-              height={80}
-              className="h-16 sm:h-20 w-auto object-contain"
+              width={320}
+              height={100}
+              className="h-20 sm:h-24 w-auto object-contain"
             />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white font-medium">
