@@ -63,7 +63,7 @@ export async function PackagesPreview() {
                   <Zap className="h-5 w-5 text-cyan-600 shrink-0" />
                   <div className="text-xs font-bold">
                     <span>Est. Generation: </span>
-                    <span className="text-cyan-950 font-black">{pkg.monthlyUnitsKwh} Units / mo</span>
+                    <span className="text-cyan-950 font-black">{pkg.estimatedGenerationKwhMonth} Units / mo</span>
                   </div>
                 </div>
 
@@ -73,13 +73,13 @@ export async function PackagesPreview() {
                     <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0F2D52] text-white shadow-xs">
                       <Check className="h-3 w-3 stroke-[3]" aria-hidden="true" />
                     </div>
-                    <span>{pkg.panelsCount} x Tier-1 Solar Panels</span>
+                    <span>{pkg.panelCount} x Tier-1 Solar Panels</span>
                   </li>
                   <li className="flex items-start gap-3 text-sm font-semibold text-slate-700">
                     <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0F2D52] text-white shadow-xs">
                       <Check className="h-3 w-3 stroke-[3]" aria-hidden="true" />
                     </div>
-                    <span>{pkg.inverterSpecs}</span>
+                    <span>{pkg.inverterInfo}</span>
                   </li>
                   <li className="flex items-start gap-3 text-sm font-semibold text-slate-700">
                     <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0F2D52] text-white shadow-xs">

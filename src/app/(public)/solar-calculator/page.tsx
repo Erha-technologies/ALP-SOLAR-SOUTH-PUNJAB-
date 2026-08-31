@@ -166,7 +166,7 @@ export default function SolarCalculatorPage() {
     }
 
     const cityObj = CITIES.find((c) => c.sunHours.toString() === selectedCitySunHours) || CITIES[0];
-    const cityName = cityObj.name;
+    const cityName = cityObj?.name ?? "Multan";
 
     const unitsPerKwhBill = 60; // Solar Citizen blended rate formula
     let monthlyUnits = 0;

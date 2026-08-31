@@ -5,11 +5,11 @@ import { HelpCircle, ArrowRight } from "lucide-react";
 import { FAQAccordion } from "@/components/sections/FAQAccordion";
 
 const faqData = [
-  { id: "1", question: "How much can I save on electricity bills with solar?", answer: "A properly sized Tier-1 solar system with net metering reduces your electricity bills by up to 90%. Excess power generated during peak daytime hours is exported back to the grid." },
-  { id: "2", question: "How long does MEPCO Net Metering approval take?", answer: "ALP Solar handles the complete end-to-end documentation. Net metering NOC approval and Green Meter installation typically take 3 to 4 weeks." },
-  { id: "3", question: "What is the payback period for a residential solar system?", answer: "The typical return on investment (ROI) payback period for solar installations in Pakistan is 3 to 3.5 years." },
-  { id: "4", question: "What is the warranty on solar panels and inverters?", answer: "We provide 25 years linear power performance warranty on Tier-1 N-Type TopCon solar panels, 5 years warranty on hybrid/on-grid inverters, and up to 10 years warranty on lithium batteries." },
-  { id: "5", question: "Does the system work during load shedding / power outages?", answer: "Hybrid solar systems equipped with lithium battery storage seamlessly provide backup power for ACs, lights, fans, and appliances during load shedding." },
+  { id: "1", category: "Savings", question: "How much can I save on electricity bills with solar?", answer: "A properly sized Tier-1 solar system with net metering reduces your electricity bills by up to 90%. Excess power generated during peak daytime hours is exported back to the grid." },
+  { id: "2", category: "Net Metering", question: "How long does MEPCO Net Metering approval take?", answer: "ALP Solar handles the complete end-to-end documentation. Net metering NOC approval and Green Meter installation typically take 3 to 4 weeks." },
+  { id: "3", category: "ROI", question: "What is the payback period for a residential solar system?", answer: "The typical return on investment (ROI) payback period for solar installations in Pakistan is 3 to 3.5 years." },
+  { id: "4", category: "Warranty", question: "What is the warranty on solar panels and inverters?", answer: "We provide 25 years linear power performance warranty on Tier-1 N-Type TopCon solar panels, 5 years warranty on hybrid/on-grid inverters, and up to 10 years warranty on lithium batteries." },
+  { id: "5", category: "Backup", question: "Does the system work during load shedding / power outages?", answer: "Hybrid solar systems equipped with lithium battery storage seamlessly provide backup power for ACs, lights, fans, and appliances during load shedding." },
 ];
 
 export default function FAQPage() {

@@ -91,7 +91,7 @@ export interface Testimonial {
 
 export interface FAQ {
   id: string;
-  category: string;
+  category?: string;
   question: string;
   answer: string;
 }

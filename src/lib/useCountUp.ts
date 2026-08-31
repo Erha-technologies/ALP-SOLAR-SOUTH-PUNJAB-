@@ -19,8 +19,9 @@ export function useCountUp(target: number, durationMs = 1200) {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting || hasRun.current) return;
+      (entries) => {
+        const entry = entries[0];
+        if (!entry || !entry.isIntersecting || hasRun.current) return;
         hasRun.current = true;
 
         if (prefersReducedMotion) {

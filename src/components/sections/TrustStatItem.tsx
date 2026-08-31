@@ -6,8 +6,8 @@ import type { TrustStat } from "@/types";
 /** Pulls the leading number out of strings like "500+", "5+ MW", "1000+". */
 function parseLeadingNumber(value: string): { number: number; suffix: string } {
   const match = value.match(/^([\d,.]+)(.*)$/);
-  if (!match) return { number: 0, suffix: value };
-  return { number: parseFloat(match[1].replace(/,/g, "")), suffix: match[2] };
+  if (!match || !match[1]) return { number: 0, suffix: value };
+  return { number: parseFloat(match[1].replace(/,/g, "")), suffix: match[2] ?? "" };
 }
 
 export function TrustStatItem({ stat }: { stat: TrustStat }) {
