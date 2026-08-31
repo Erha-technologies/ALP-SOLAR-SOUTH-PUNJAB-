@@ -1,0 +1,891 @@
+// ============================================================================
+// Pakistan Solar Business Platform — Prisma Schema (Phase 2)
+// Database: MySQL 8+ (InnoDB, utf8mb4)
+// Conventions:
+//   - Model names: PascalCase (Prisma) -> @@map to snake_case plural table
+//   - Field names: camelCase (Prisma)  -> @map to snake_case column
+//   - All money fields: Decimal(15,2) — never Float
+//   - created_at / updated_at on every table; deleted_at where soft-delete
+//     is appropriate (users, customers, products, projects)
+//   - Enums used for stable, spec-defined state machines (statuses, types).
+//   - Lookup tables used where admins need to add/edit values without a
+//     code deploy (categories, service areas, roles/permissions).
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum CustomerType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  SITE_SURVEY
+  QUOTATION_SENT
+  NEGOTIATION
+  WON
+  LOST
+  FOLLOW_UP
+}
+
+enum LeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LeadSource {
+  HOMEPAGE
+  CALCULATOR
+  CONTACT_PAGE
+  QUOTE_PAGE
+  PACKAGE_PAGE
+  PROJECT_PAGE
+  WHATSAPP_CTA
+  PHONE_CTA
+  BLOG
+  OTHER
+}
+
+enum ProjectStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  MAINTENANCE
+}
+
+enum InstallationStatus {
+  SCHEDULED
+  SITE_SURVEY
+  INSTALLATION
+  TESTING
+  COMPLETED
+  CANCELLED
+}
+
+enum AppointmentType {
+  SITE_SURVEY
+  CONSULTATION
+  INSTALLATION
+  MAINTENANCE
+  FOLLOW_UP
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum QuotationItemType {
+  PANEL
+  INVERTER
+  BATTERY
+  MOUNTING_STRUCTURE
+  CABLE
+  PROTECTION
+  ACCESSORY
+  LABOR
+  OTHER
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CHEQUE
+  ONLINE
+  OTHER
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum StockStatus {
+  IN_STOCK
+  OUT_OF_STOCK
+  PRE_ORDER
+  DISCONTINUED
+}
+
+enum ContactMessageStatus {
+  NEW
+  READ
+  RESPONDED
+  ARCHIVED
+}
+
+// ============================================================================
+// RBAC (data-driven; six roles are seeded, see prisma/seed.ts)
+// ============================================================================
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique @db.VarChar(64) // e.g. SUPER_ADMIN
+  description String?          @db.VarChar(255)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique @db.VarChar(128) // e.g. "leads.create"
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           Int   @id @default(autoincrement())
+  roleId       Int   @map("role_id")
+  permissionId Int   @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  id     Int @id @default(autoincrement())
+  userId Int @map("user_id")
+  roleId Int @map("role_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+// ============================================================================
+// USERS (internal staff + customer portal logins)
+// ============================================================================
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique @db.VarChar(191)
+  phone        String?   @db.VarChar(32)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  fullName     String    @map("full_name") @db.VarChar(150)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  userRoles              UserRole[]
+  assignedLeads          Lead[]                   @relation("LeadAssignedUser")
+  leadNotes              LeadNote[]
+  createdQuotations      Quotation[]              @relation("QuotationCreatedBy")
+  assignedAppointments   Appointment[]            @relation("AppointmentAssignedUser")
+  installationTeamRoles  InstallationTeamMember[]
+  authoredBlogPosts      BlogPost[]
+  uploadedMedia          Media[]
+  notifications          Notification[]
+  auditLogs              AuditLog[]
+  customerProfile        Customer?                @relation("CustomerUserAccount")
+
+  @@index([email])
+  @@index([phone])
+  @@map("users")
+}
+
+// ============================================================================
+// LEADS
+// ============================================================================
+
+model Lead {
+  id                    Int          @id @default(autoincrement())
+  fullName              String       @map("full_name") @db.VarChar(150)
+  phone                 String       @db.VarChar(32)
+  whatsapp              String?      @db.VarChar(32)
+  email                 String?      @db.VarChar(191)
+  city                  String?      @db.VarChar(100)
+  address                String?      @db.VarChar(255)
+  customerType          CustomerType @map("customer_type")
+  monthlyElectricityBill Decimal?    @map("monthly_electricity_bill") @db.Decimal(15, 2)
+  monthlyUnits          Int?         @map("monthly_units")
+  estimatedSystemSizeKw Decimal?     @map("estimated_system_size_kw") @db.Decimal(6, 2)
+  batteryRequired       Boolean?     @map("battery_required")
+  source                LeadSource   @default(OTHER)
+  status                LeadStatus   @default(NEW)
+  priority               LeadPriority @default(MEDIUM)
+  assignedUserId         Int?         @map("assigned_user_id")
+  customerId              Int?         @map("customer_id")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt               DateTime     @updatedAt @map("updated_at")
+
+  assignedUser User?     @relation("LeadAssignedUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  notes                LeadNote[]
+  appointments         Appointment[]
+  quotations           Quotation[]
+  calculatorSubmissions CalculatorSubmission[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([city])
+  @@index([assignedUserId])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+model LeadNote {
+  id        Int      @id @default(autoincrement())
+  leadId    Int      @map("lead_id")
+  authorId  Int      @map("author_id")
+  note      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("lead_notes")
+}
+
+// ============================================================================
+// CUSTOMERS
+// ============================================================================
+
+model Customer {
+  id             Int          @id @default(autoincrement())
+  customerNumber String       @unique @map("customer_number") @db.VarChar(32)
+  userId         Int?         @unique @map("user_id") // linked portal login, if any
+  fullName       String       @map("full_name") @db.VarChar(150)
+  phone          String       @db.VarChar(32)
+  whatsapp       String?      @db.VarChar(32)
+  email          String?      @db.VarChar(191)
+  cnic           String?      @db.VarChar(20) // only if genuinely required — see docs
+  address        String?      @db.VarChar(255)
+  city           String?      @db.VarChar(100)
+  customerType   CustomerType @map("customer_type")
+  notes          String?      @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
+
+  user      User?              @relation("CustomerUserAccount", fields: [userId], references: [id], onDelete: SetNull)
+  addresses CustomerAddress[]
+  leads         Lead[]
+  projects      Project[]
+  quotations    Quotation[]
+  appointments  Appointment[]
+  installations Installation[]
+  payments      Payment[]
+
+  @@index([phone])
+  @@index([city])
+  @@map("customers")
+}
+
+model CustomerAddress {
+  id          Int      @id @default(autoincrement())
+  customerId  Int      @map("customer_id")
+  label       String?  @db.VarChar(50) // e.g. "Home", "Site"
+  addressLine String   @map("address_line") @db.VarChar(255)
+  city        String   @db.VarChar(100)
+  province    String?  @db.VarChar(100)
+  postalCode  String?  @map("postal_code") @db.VarChar(20)
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("customer_addresses")
+}
+
+// ============================================================================
+// PRODUCTS
+// ============================================================================
+
+model ProductCategory {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  slug         String   @unique @db.VarChar(120)
+  description  String?  @db.VarChar(255)
+  displayOrder Int      @default(0) @map("display_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id                       Int         @id @default(autoincrement())
+  sku                      String      @unique @db.VarChar(64)
+  name                     String      @db.VarChar(150)
+  slug                     String      @unique @db.VarChar(180)
+  brand                    String?     @db.VarChar(100)
+  model                    String?     @db.VarChar(100)
+  categoryId               Int         @map("category_id")
+  description              String?     @db.Text
+  shortDescription         String?     @map("short_description") @db.VarChar(255)
+  wattage                  Int?
+  efficiency               Decimal?    @db.Decimal(5, 2)
+  voltage                  Decimal?    @db.Decimal(6, 2)
+  productWarrantyYears     Int?        @map("product_warranty_years")
+  performanceWarrantyYears Int?        @map("performance_warranty_years")
+  stockStatus              StockStatus @default(IN_STOCK) @map("stock_status")
+  price                    Decimal     @db.Decimal(15, 2)
+  imageUrl                 String?     @map("image_url") @db.VarChar(500)
+  datasheetUrl             String?     @map("datasheet_url") @db.VarChar(500)
+  isFeatured               Boolean     @default(false) @map("is_featured")
+  isActive                 Boolean     @default(true) @map("is_active")
+  createdAt                DateTime    @default(now()) @map("created_at")
+  updatedAt                DateTime    @updatedAt @map("updated_at")
+  deletedAt                DateTime?   @map("deleted_at")
+
+  category           ProductCategory        @relation(fields: [categoryId], references: [id])
+  packageProducts    SolarPackageProduct[]
+  quotationItems     QuotationItem[]
+
+  @@index([categoryId])
+  @@index([slug])
+  @@map("products")
+}
+
+// ============================================================================
+// SOLAR PACKAGES
+// ============================================================================
+
+model SolarPackage {
+  id                    Int          @id @default(autoincrement())
+  name                  String       @db.VarChar(100)
+  slug                  String       @unique @db.VarChar(120)
+  systemCapacityKw      Decimal      @map("system_capacity_kw") @db.Decimal(6, 2)
+  recommendedFor        CustomerType @map("recommended_for")
+  estimatedGeneration   Decimal?     @map("estimated_generation") @db.Decimal(10, 2) // kWh/month
+  panelCount            Int?         @map("panel_count")
+  panelWattage          Int?         @map("panel_wattage")
+  inverterInfo          String?      @map("inverter_info") @db.VarChar(150)
+  batteryOption         String?      @map("battery_option") @db.VarChar(150)
+  estimatedSavings      Decimal?     @map("estimated_savings") @db.Decimal(15, 2)
+  price                 Decimal      @db.Decimal(15, 2)
+  warrantyYears         Int?         @map("warranty_years")
+  description           String?      @db.Text
+  features              Json?        // string[] of bullet features
+  isFeatured            Boolean      @default(false) @map("is_featured")
+  isActive              Boolean      @default(true) @map("is_active")
+  displayOrder          Int          @default(0) @map("display_order")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt               DateTime     @updatedAt @map("updated_at")
+
+  packageProducts SolarPackageProduct[]
+
+  @@map("solar_packages")
+}
+
+model SolarPackageProduct {
+  id         Int @id @default(autoincrement())
+  packageId  Int @map("package_id")
+  productId  Int @map("product_id")
+  quantity   Int @default(1)
+
+  package SolarPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, productId])
+  @@map("solar_package_products")
+}
+
+// ============================================================================
+// PROJECTS (portfolio)
+// ============================================================================
+
+model Project {
+  id                 Int           @id @default(autoincrement())
+  title              String        @db.VarChar(150)
+  slug               String        @unique @db.VarChar(180)
+  customerId         Int?          @map("customer_id")
+  customerType       CustomerType  @map("customer_type")
+  city               String?       @db.VarChar(100)
+  location           String?       @db.VarChar(255)
+  systemCapacityKw   Decimal       @map("system_capacity_kw") @db.Decimal(6, 2)
+  installationDate   DateTime?     @map("installation_date")
+  panelBrand         String?       @map("panel_brand") @db.VarChar(100)
+  panelModel         String?       @map("panel_model") @db.VarChar(100)
+  inverterBrand      String?       @map("inverter_brand") @db.VarChar(100)
+  inverterModel      String?       @map("inverter_model") @db.VarChar(100)
+  batteryInfo        String?       @map("battery_info") @db.VarChar(150)
+  annualGeneration   Decimal?      @map("annual_generation") @db.Decimal(10, 2)
+  estimatedSavings   Decimal?      @map("estimated_savings") @db.Decimal(15, 2)
+  description        String?       @db.Text
+  isFeatured         Boolean       @default(false) @map("is_featured")
+  status             ProjectStatus @default(PLANNED)
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  deletedAt          DateTime?     @map("deleted_at")
+
+  customer     Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  images       ProjectImage[]
+  installation Installation?
+  quotations   Quotation[]
+  testimonials Testimonial[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([slug])
+  @@map("projects")
+}
+
+model ProjectImage {
+  id           Int      @id @default(autoincrement())
+  projectId    Int      @map("project_id")
+  url          String   @db.VarChar(500)
+  altText      String?  @map("alt_text") @db.VarChar(255)
+  isCover      Boolean  @default(false) @map("is_cover")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_images")
+}
+
+// ============================================================================
+// INSTALLATIONS
+// ============================================================================
+
+model Installation {
+  id                 Int                 @id @default(autoincrement())
+  customerId         Int                 @map("customer_id")
+  projectId          Int?                @unique @map("project_id")
+  systemCapacityKw   Decimal             @map("system_capacity_kw") @db.Decimal(6, 2)
+  installationDate   DateTime?           @map("installation_date")
+  siteAddress        String?             @map("site_address") @db.VarChar(255)
+  status             InstallationStatus  @default(SCHEDULED)
+  commissioningDate  DateTime?           @map("commissioning_date")
+  warrantyStart      DateTime?           @map("warranty_start")
+  warrantyEnd        DateTime?           @map("warranty_end")
+  notes              String?             @db.Text
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  customer Customer                  @relation(fields: [customerId], references: [id])
+  project  Project?                  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  team     InstallationTeamMember[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("installations")
+}
+
+model InstallationTeamMember {
+  id             Int      @id @default(autoincrement())
+  installationId Int      @map("installation_id")
+  userId         Int      @map("user_id")
+  role           String?  @db.VarChar(50) // e.g. "Lead Technician", "Support"
+  assignedAt     DateTime @default(now()) @map("assigned_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([installationId, userId])
+  @@map("installation_team")
+}
+
+// ============================================================================
+// APPOINTMENTS
+// ============================================================================
+
+model Appointment {
+  id             Int               @id @default(autoincrement())
+  type           AppointmentType
+  customerId     Int?              @map("customer_id")
+  leadId         Int?              @map("lead_id")
+  assignedUserId Int?              @map("assigned_user_id")
+  appointmentDate DateTime         @map("appointment_date")
+  startTime       DateTime?        @map("start_time")
+  endTime         DateTime?        @map("end_time")
+  location        String?          @db.VarChar(255)
+  notes           String?          @db.Text
+  status          AppointmentStatus @default(SCHEDULED)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  lead         Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  assignedUser User?     @relation("AppointmentAssignedUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([leadId])
+  @@index([assignedUserId])
+  @@index([appointmentDate])
+  @@index([status])
+  @@map("appointments")
+}
+
+// ============================================================================
+// QUOTATIONS
+// ============================================================================
+
+model Quotation {
+  id                Int             @id @default(autoincrement())
+  quotationNumber   String          @unique @map("quotation_number") @db.VarChar(32)
+  customerId        Int             @map("customer_id")
+  leadId            Int?            @map("lead_id")
+  projectId         Int?            @map("project_id")
+  systemCapacityKw  Decimal?        @map("system_capacity_kw") @db.Decimal(6, 2)
+  installationCost  Decimal         @default(0) @map("installation_cost") @db.Decimal(15, 2)
+  equipmentCost     Decimal         @default(0) @map("equipment_cost") @db.Decimal(15, 2)
+  additionalCosts   Decimal         @default(0) @map("additional_costs") @db.Decimal(15, 2)
+  discount          Decimal         @default(0) @db.Decimal(15, 2)
+  tax               Decimal         @default(0) @db.Decimal(15, 2)
+  totalAmount       Decimal         @map("total_amount") @db.Decimal(15, 2)
+  advanceAmount     Decimal         @default(0) @map("advance_amount") @db.Decimal(15, 2)
+  remainingAmount   Decimal         @default(0) @map("remaining_amount") @db.Decimal(15, 2)
+  validUntil        DateTime?       @map("valid_until")
+  notes             String?         @db.Text
+  termsAndConditions String?        @map("terms_and_conditions") @db.Text
+  status            QuotationStatus @default(DRAFT)
+  createdById       Int             @map("created_by_id")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  customer  Customer @relation(fields: [customerId], references: [id])
+  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdBy User     @relation("QuotationCreatedBy", fields: [createdById], references: [id])
+
+  items    QuotationItem[]
+  payments Payment[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([quotationNumber])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id          Int               @id @default(autoincrement())
+  quotationId Int               @map("quotation_id")
+  productId   Int?              @map("product_id")
+  itemType    QuotationItemType @map("item_type")
+  description String            @db.VarChar(255)
+  quantity    Int               @default(1)
+  unitPrice   Decimal           @map("unit_price") @db.Decimal(15, 2)
+  lineTotal   Decimal           @map("line_total") @db.Decimal(15, 2)
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product   Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([quotationId])
+  @@map("quotation_items")
+}
+
+// ============================================================================
+// PAYMENTS
+// ============================================================================
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  quotationId     Int           @map("quotation_id")
+  customerId      Int           @map("customer_id")
+  amount          Decimal       @db.Decimal(15, 2)
+  method          PaymentMethod
+  referenceNumber String?       @map("reference_number") @db.VarChar(100)
+  paymentDate     DateTime      @map("payment_date")
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id])
+  customer  Customer  @relation(fields: [customerId], references: [id])
+
+  @@index([quotationId])
+  @@index([customerId])
+  @@map("payments")
+}
+
+// ============================================================================
+// TESTIMONIALS
+// ============================================================================
+
+model Testimonial {
+  id           Int          @id @default(autoincrement())
+  customerName String       @map("customer_name") @db.VarChar(150)
+  city         String?      @db.VarChar(100)
+  customerType CustomerType @map("customer_type")
+  rating       Int          @db.TinyInt
+  testimonial  String       @db.Text
+  imageUrl     String?      @map("image_url") @db.VarChar(500)
+  projectId    Int?         @map("project_id")
+  isFeatured   Boolean      @default(false) @map("is_featured")
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([isActive])
+  @@map("testimonials")
+}
+
+// ============================================================================
+// FAQ
+// ============================================================================
+
+model FaqCategory {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  slug         String   @unique @db.VarChar(120)
+  displayOrder Int      @default(0) @map("display_order")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  faqs Faq[]
+
+  @@map("faq_categories")
+}
+
+model Faq {
+  id           Int      @id @default(autoincrement())
+  categoryId   Int      @map("category_id")
+  question     String   @db.VarChar(500)
+  answer       String   @db.Text
+  displayOrder Int      @default(0) @map("display_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  category FaqCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@map("faqs")
+}
+
+// ============================================================================
+// BLOG CMS
+// ============================================================================
+
+model BlogCategory {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(100)
+  slug String @unique @db.VarChar(120)
+
+  posts BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id               Int        @id @default(autoincrement())
+  title            String     @db.VarChar(200)
+  slug             String     @unique @db.VarChar(220)
+  excerpt          String?    @db.VarChar(500)
+  content          String     @db.LongText
+  featuredImageUrl String?    @map("featured_image_url") @db.VarChar(500)
+  authorId         Int        @map("author_id")
+  categoryId       Int?       @map("category_id")
+  seoTitle         String?    @map("seo_title") @db.VarChar(200)
+  seoDescription   String?    @map("seo_description") @db.VarChar(300)
+  keywords         String?    @db.VarChar(500)
+  publishedAt      DateTime?  @map("published_at")
+  status           BlogStatus @default(DRAFT)
+  isFeatured       Boolean    @default(false) @map("is_featured")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  author   User          @relation(fields: [authorId], references: [id])
+  category BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([slug])
+  @@index([categoryId])
+  @@map("blog_posts")
+}
+
+// ============================================================================
+// SERVICE AREAS
+// ============================================================================
+
+model ServiceArea {
+  id               Int      @id @default(autoincrement())
+  city             String   @db.VarChar(100)
+  province         String?  @db.VarChar(100)
+  slug             String   @unique @db.VarChar(120)
+  shortDescription String?  @map("short_description") @db.VarChar(500)
+  longDescription  String?  @map("long_description") @db.Text
+  seoTitle         String?  @map("seo_title") @db.VarChar(200)
+  seoDescription   String?  @map("seo_description") @db.VarChar(300)
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([city])
+  @@map("service_areas")
+}
+
+// ============================================================================
+// CONTACT + CALCULATOR SUBMISSIONS
+// ============================================================================
+
+model ContactMessage {
+  id        Int                   @id @default(autoincrement())
+  name      String                @db.VarChar(150)
+  phone     String?               @db.VarChar(32)
+  email     String?               @db.VarChar(191)
+  subject   String?               @db.VarChar(200)
+  message   String                @db.Text
+  status    ContactMessageStatus  @default(NEW)
+  createdAt DateTime              @default(now()) @map("created_at")
+
+  @@index([status])
+  @@map("contact_messages")
+}
+
+model CalculatorSubmission {
+  id                          Int          @id @default(autoincrement())
+  customerType                CustomerType @map("customer_type")
+  city                        String?      @db.VarChar(100)
+  monthlyBill                 Decimal?     @map("monthly_bill") @db.Decimal(15, 2)
+  monthlyUnits                Int?         @map("monthly_units")
+  roofAreaSqft                Decimal?     @map("roof_area_sqft") @db.Decimal(10, 2)
+  daytimeUsagePercent         Decimal?     @map("daytime_usage_percent") @db.Decimal(5, 2)
+  nighttimeUsagePercent       Decimal?     @map("nighttime_usage_percent") @db.Decimal(5, 2)
+  backupHours                 Decimal?     @map("backup_hours") @db.Decimal(5, 2)
+  batteryRequired              Boolean?     @map("battery_required")
+  recommendedSystemSizeKw      Decimal?     @map("recommended_system_size_kw") @db.Decimal(6, 2)
+  estimatedPanelCount          Int?         @map("estimated_panel_count")
+  estimatedMonthlyGeneration    Decimal?     @map("estimated_monthly_generation") @db.Decimal(10, 2)
+  estimatedAnnualGeneration     Decimal?     @map("estimated_annual_generation") @db.Decimal(10, 2)
+  estimatedAnnualSavings        Decimal?     @map("estimated_annual_savings") @db.Decimal(15, 2)
+  estimatedRoofAreaRequired     Decimal?     @map("estimated_roof_area_required") @db.Decimal(10, 2)
+  recommendedBatteryCapacityKwh Decimal?    @map("recommended_battery_capacity_kwh") @db.Decimal(10, 2)
+  name                         String?      @db.VarChar(150)
+  phone                        String?      @db.VarChar(32)
+  whatsapp                     String?      @db.VarChar(32)
+  email                        String?      @db.VarChar(191)
+  leadSource                   LeadSource   @default(CALCULATOR) @map("lead_source")
+  convertedLeadId              Int?         @map("converted_lead_id")
+  createdAt                    DateTime     @default(now()) @map("created_at")
+
+  convertedLead Lead? @relation(fields: [convertedLeadId], references: [id], onDelete: SetNull)
+
+  @@index([city])
+  @@index([convertedLeadId])
+  @@map("calculator_submissions")
+}
+
+// ============================================================================
+// MEDIA (central object-storage reference table)
+// ============================================================================
+
+model Media {
+  id             Int      @id @default(autoincrement())
+  url            String   @db.VarChar(500)
+  filename       String   @db.VarChar(255)
+  mimeType       String   @map("mime_type") @db.VarChar(100)
+  sizeBytes      Int      @map("size_bytes")
+  altText        String?  @map("alt_text") @db.VarChar(255)
+  uploadedById   Int?     @map("uploaded_by_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@map("media")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  type             String   @db.VarChar(50)
+  title            String   @db.VarChar(200)
+  message          String   @db.VarChar(500)
+  isRead           Boolean  @default(false) @map("is_read")
+  relatedEntityType String? @map("related_entity_type") @db.VarChar(50)
+  relatedEntityId   Int?    @map("related_entity_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ============================================================================
+// SETTINGS (company info, calculator assumptions, CMS toggles)
+// ============================================================================
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(100)
+  value     String   @db.Text // JSON-encoded where structured
+  group     String?  @db.VarChar(50) // e.g. "company", "calculator", "seo"
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int?     @map("user_id")
+  action     String   @db.VarChar(100) // e.g. "quotation.status_changed"
+  entityType String   @map("entity_type") @db.VarChar(50)
+  entityId   String   @map("entity_id") @db.VarChar(50)
+  oldValue   Json?    @map("old_value")
+  newValue   Json?    @map("new_value")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[COMPANY NAME] — Homepage Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: { DEFAULT: "#004F6B", dark: "#013A4F", 50: "#EAF2F5" },
+          ink: "#0B1B22",
+          ink2: "#17202A",
+          accent: { DEFAULT: "#C6A56E", soft: "#EDE4D3" },
+          surface: { DEFAULT: "#FFFFFF", muted: "#F7F9FA" },
+          muted: "#667085",
+          border: "#E5E7EB",
+        },
+        fontFamily: {
+          display: ["'Plus Jakarta Sans'", "sans-serif"],
+          body: ["Inter", "sans-serif"],
+          mono: ["'JetBrains Mono'", "monospace"],
+        },
+        maxWidth: { content: "1440px" },
+        borderRadius: { card: "12px" },
+        boxShadow: {
+          card: "0 1px 2px rgba(11,27,34,0.04), 0 8px 24px -12px rgba(11,27,34,0.10)",
+          elevated: "0 12px 40px -16px rgba(11,27,34,0.22)",
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; color: #17202A; }
+  h1,h2,h3,h4 { font-family: 'Plus Jakarta Sans', sans-serif; color: #0B1B22; }
+  .font-mono-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: #C6A56E; }
+  .container-page { max-width: 1440px; margin: 0 auto; padding: 0 1.25rem; }
+  @media (min-width: 640px) { .container-page { padding: 0 2rem; } }
+  @media (min-width: 1024px) { .container-page { padding: 0 3rem; } }
+
+  /* radio-driven tabs, no JS needed for the preview */
+  .sys-tab-panel { display: none; }
+  #tab-on:checked ~ .sys-panels #panel-on,
+  #tab-hybrid:checked ~ .sys-panels #panel-hybrid,
+  #tab-off:checked ~ .sys-panels #panel-off { display: grid; }
+  .sys-tab-label { cursor: pointer; }
+  #tab-on:checked ~ .sys-tabs label[for="tab-on"],
+  #tab-hybrid:checked ~ .sys-tabs label[for="tab-hybrid"],
+  #tab-off:checked ~ .sys-tabs label[for="tab-off"] { color: #004F6B; border-bottom-color: #C6A56E; }
+
+  @keyframes fadeSlideUp { from { opacity:0; transform: translateY(16px);} to { opacity:1; transform:none; } }
+  .animate-in { animation: fadeSlideUp .7s cubic-bezier(.16,1,.3,1) both; }
+  .delay-1 { animation-delay: .1s; }
+  .delay-2 { animation-delay: .2s; }
+  .delay-3 { animation-delay: .3s; }
+
+  ::selection { background: #EDE4D3; color: #0B1B22; }
+</style>
+</head>
+<body class="bg-surface">
+
+<p class="bg-ink text-white text-center text-xs font-mono py-2">STATIC DESIGN PREVIEW — hand-built to match design tokens, not the live Next.js build. Content is placeholder/sample data throughout.</p>
+
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50 bg-surface/95 backdrop-blur border-b border-border">
+  <div class="container-page flex h-20 items-center justify-between">
+    <span class="font-display text-lg font-bold text-primary">[COMPANY NAME]</span>
+    <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-ink2">
+      <a href="#" class="hover:text-primary">Home</a>
+      <a href="#" class="hover:text-primary">Solar Solutions</a>
+      <a href="#packages" class="hover:text-primary">Packages</a>
+      <a href="#" class="hover:text-primary">Products</a>
+      <a href="#projects" class="hover:text-primary">Projects</a>
+      <a href="#" class="hover:text-primary">Calculator</a>
+      <a href="#" class="hover:text-primary">About</a>
+      <a href="#" class="hover:text-primary">Blog</a>
+      <a href="#" class="hover:text-primary">Contact</a>
+    </nav>
+    <a href="#" class="hidden lg:inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-medium text-white hover:bg-primary-dark">Get Free Quote</a>
+    <button class="lg:hidden text-ink" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="relative overflow-hidden bg-ink">
+  <div class="pointer-events-none absolute inset-0 opacity-60" style="background: radial-gradient(ellipse 60% 50% at 75% 30%, rgba(0,79,107,0.55), transparent 70%)"></div>
+  <div class="container-page relative grid gap-12 py-20 lg:grid-cols-2 lg:items-center lg:py-28">
+    <div class="animate-in">
+      <span class="eyebrow">Solar EPC · Pakistan</span>
+      <h1 class="mt-5 max-w-xl font-display text-4xl sm:text-5xl lg:text-[3.4rem] font-bold leading-[1.08] text-white">
+        Power Your Future <span class="text-accent">With Solar</span>
+      </h1>
+      <p class="mt-5 max-w-md text-base sm:text-lg leading-relaxed text-white/70">
+        Professional solar solutions designed for homes and businesses across Pakistan — engineered, installed, and supported end to end.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="#" class="inline-flex items-center justify-center gap-2 h-13 rounded-md bg-primary px-7 text-base font-medium text-white hover:bg-primary-dark" style="height:3.25rem">Calculate My Solar System →</a>
+        <a href="#" class="inline-flex items-center justify-center h-13 rounded-md border border-white/25 px-7 text-base font-medium text-white hover:border-accent hover:text-accent" style="height:3.25rem">Get Free Quote</a>
+      </div>
+      <a href="#" class="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white/70 hover:text-accent">💬 WhatsApp an Expert</a>
+    </div>
+
+    <div class="animate-in delay-2">
+      <div class="rounded-card border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+        <svg viewBox="0 0 520 380" class="w-full">
+          <polygon points="60,300 260,150 460,300" fill="#004F6B" opacity="0.18"/>
+          <polyline points="60,300 260,150 460,300" fill="none" stroke="#EDE4D3" stroke-opacity="0.4" stroke-width="1.5"/>
+          <rect x="140" y="215" width="240" height="52" rx="3" fill="#0B1B22" stroke="#C6A56E" stroke-width="1.25"/>
+          <line x1="200" y1="215" x2="200" y2="267" stroke="#C6A56E" stroke-opacity="0.5"/>
+          <line x1="260" y1="215" x2="260" y2="267" stroke="#C6A56E" stroke-opacity="0.5"/>
+          <line x1="320" y1="215" x2="320" y2="267" stroke="#C6A56E" stroke-opacity="0.5"/>
+          <line x1="140" y1="241" x2="380" y2="241" stroke="#C6A56E" stroke-opacity="0.5"/>
+          <line x1="380" y1="230" x2="440" y2="200" stroke="#C6A56E" stroke-dasharray="2 3"/>
+          <circle cx="380" cy="230" r="2.5" fill="#C6A56E"/>
+          <text x="446" y="203" font-family="JetBrains Mono, monospace" font-size="11" fill="#EDE4D3">PV MODULES</text>
+          <line x1="200" y1="267" x2="150" y2="310" stroke="#C6A56E" stroke-dasharray="2 3"/>
+          <circle cx="200" cy="267" r="2.5" fill="#C6A56E"/>
+          <text x="60" y="323" font-family="JetBrains Mono, monospace" font-size="11" fill="#EDE4D3">MOUNT + RAIL</text>
+          <rect x="235" y="290" width="50" height="30" rx="2" fill="#0B1B22" stroke="#EDE4D3" stroke-opacity="0.4"/>
+          <text x="205" y="336" font-family="JetBrains Mono, monospace" font-size="11" fill="#EDE4D3">INVERTER</text>
+          <line x1="260" y1="290" x2="260" y2="330" stroke="#EDE4D3" stroke-opacity="0.4" stroke-dasharray="2 3"/>
+        </svg>
+      </div>
+      <dl class="mt-6 grid grid-cols-3 divide-x divide-white/10 rounded-card border border-white/10 bg-white/[0.03] py-5">
+        <div class="px-4 text-center"><dt class="font-mono text-xs uppercase tracking-wide text-white/50">System Capacity</dt><dd class="font-mono-num mt-1.5 text-xl sm:text-2xl text-white">10.2 kW</dd></div>
+        <div class="px-4 text-center"><dt class="font-mono text-xs uppercase tracking-wide text-white/50">Units / Month</dt><dd class="font-mono-num mt-1.5 text-xl sm:text-2xl text-white">1,450+</dd></div>
+        <div class="px-4 text-center"><dt class="font-mono text-xs uppercase tracking-wide text-white/50">Est. Savings</dt><dd class="font-mono-num mt-1.5 text-xl sm:text-2xl text-white">PKR —</dd></div>
+      </dl>
+      <p class="mt-3 text-center font-mono text-[11px] text-white/35">Sample figures for illustration</p>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<section class="border-b border-border bg-surface-muted">
+  <div class="container-page grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 py-10 sm:py-12">
+    <div class="text-center sm:text-left"><p class="font-mono-num text-3xl sm:text-4xl text-primary">500+</p><p class="mt-1 text-sm text-muted">Installations</p><span class="font-mono text-[10px] uppercase text-muted/70">Sample data</span></div>
+    <div class="text-center sm:text-left"><p class="font-mono-num text-3xl sm:text-4xl text-primary">5+ MW</p><p class="mt-1 text-sm text-muted">Installed Capacity</p><span class="font-mono text-[10px] uppercase text-muted/70">Sample data</span></div>
+    <div class="text-center sm:text-left"><p class="font-mono-num text-3xl sm:text-4xl text-primary">10+</p><p class="mt-1 text-sm text-muted">Years Experience</p><span class="font-mono text-[10px] uppercase text-muted/70">Sample data</span></div>
+    <div class="text-center sm:text-left"><p class="font-mono-num text-3xl sm:text-4xl text-primary">1000+</p><p class="mt-1 text-sm text-muted">Customers Served</p><span class="font-mono text-[10px] uppercase text-muted/70">Sample data</span></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="py-20 sm:py-28">
+  <div class="container-page">
+    <div class="max-w-xl">
+      <span class="eyebrow">What We Build</span>
+      <h2 class="mt-3 text-3xl sm:text-4xl font-bold">Complete Solar Solutions</h2>
+    </div>
+    <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- repeatable service card -->
+      <div class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow duration-300 p-7">
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">🏠</div>
+        <h3 class="mt-5 text-lg font-semibold">Residential Solar</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">Rooftop systems sized around your household's real usage, designed to cut your monthly bill from day one.</p>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">Learn more →</a>
+      </div>
+      <div class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow duration-300 p-7">
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">🏢</div>
+        <h3 class="mt-5 text-lg font-semibold">Commercial Solar</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">Larger-scale installations for offices, retail, and warehouses — engineered around business-hours load.</p>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">Learn more →</a>
+      </div>
+      <div class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow duration-300 p-7">
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">🏭</div>
+        <h3 class="mt-5 text-lg font-semibold">Industrial Solar</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">High-capacity systems for manufacturing and industrial sites with heavy, continuous power demand.</p>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">Learn more →</a>
+      </div>
+      <div class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow duration-300 p-7">
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">🔋</div>
+        <h3 class="mt-5 text-lg font-semibold">Hybrid Solar</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">Grid-tied systems with battery backup — bill reduction by day, power through loadshedding at night.</p>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">Learn more →</a>
+      </div>
+      <div class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow duration-300 p-7">
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">⚡</div>
+        <h3 class="mt-5 text-lg font-semibold">Off-Grid Solar</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">Fully independent power for sites without reliable grid access, sized for continuous self-sufficiency.</p>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">Learn more →</a>
+      </div>
+      <div class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow duration-300 p-7">
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">🔧</div>
+        <h3 class="mt-5 text-lg font-semibold">Solar Maintenance</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted">Scheduled cleaning, inspection, and performance monitoring to keep an installed system at rated output.</p>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">Learn more →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEM TYPES (radio-driven tabs, no JS) -->
+<section class="bg-surface-muted py-20 sm:py-28">
+  <div class="container-page">
+    <div class="max-w-xl">
+      <span class="eyebrow">System Types</span>
+      <h2 class="mt-3 text-3xl sm:text-4xl font-bold">Choose the Right Setup</h2>
+    </div>
+
+    <input type="radio" name="systab" id="tab-on" class="hidden" checked>
+    <input type="radio" name="systab" id="tab-hybrid" class="hidden">
+    <input type="radio" name="systab" id="tab-off" class="hidden">
+
+    <div class="sys-tabs mt-10 flex gap-1 border-b border-border">
+      <label for="tab-on" class="sys-tab-label px-5 sm:px-6 py-3 text-sm sm:text-base font-medium text-muted border-b-2 border-transparent">On-Grid</label>
+      <label for="tab-hybrid" class="sys-tab-label px-5 sm:px-6 py-3 text-sm sm:text-base font-medium text-muted border-b-2 border-transparent">Hybrid</label>
+      <label for="tab-off" class="sys-tab-label px-5 sm:px-6 py-3 text-sm sm:text-base font-medium text-muted border-b-2 border-transparent">Off-Grid</label>
+    </div>
+
+    <div class="sys-panels mt-10">
+      <div id="panel-on" class="sys-tab-panel gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center" style="display:grid">
+        <div class="rounded-card border border-border bg-surface p-8">
+          <svg viewBox="0 0 400 220" class="w-full">
+            <rect x="20" y="20" width="120" height="40" rx="2" fill="none" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="20" y="14" font-family="JetBrains Mono" font-size="10" fill="#667085">PV ARRAY</text>
+            <rect x="160" y="80" width="70" height="40" rx="2" fill="#EAF2F5" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="164" y="105" font-family="JetBrains Mono" font-size="10" fill="#004F6B">INVERTER</text>
+            <path d="M80,60 L80,100 L160,100" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <rect x="290" y="70" width="90" height="60" rx="2" fill="none" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="300" y="64" font-family="JetBrains Mono" font-size="10" fill="#667085">LOAD</text>
+            <path d="M230,100 L290,100" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <rect x="290" y="20" width="90" height="34" rx="2" fill="none" stroke="#667085" stroke-width="1.25" stroke-dasharray="4 2"/>
+            <text x="300" y="14" font-family="JetBrains Mono" font-size="10" fill="#667085">GRID</text>
+            <path d="M335,54 L335,80" fill="none" stroke="#667085" stroke-width="1.25" stroke-dasharray="3 3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-mono text-xs uppercase tracking-wide text-accent">Best for: Reducing electricity bills</span>
+          <p class="mt-3 text-base leading-relaxed">Panels feed power directly into your home or business alongside the grid connection, offsetting the units you'd otherwise buy from the utility.</p>
+          <dl class="mt-6 space-y-4 border-t border-border pt-6 text-sm">
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Grid connection</dt><dd>Connected — exports excess generation via net metering where available.</dd></div>
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Battery</dt><dd>No battery. Lowest-cost entry point into solar.</dd></div>
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Backup</dt><dd>No backup during a grid outage — the inverter shuts off for safety.</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <div id="panel-hybrid" class="sys-tab-panel gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div class="rounded-card border border-border bg-surface p-8">
+          <svg viewBox="0 0 400 220" class="w-full">
+            <rect x="20" y="20" width="120" height="40" rx="2" fill="none" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="20" y="14" font-family="JetBrains Mono" font-size="10" fill="#667085">PV ARRAY</text>
+            <rect x="160" y="80" width="70" height="40" rx="2" fill="#EAF2F5" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="164" y="105" font-family="JetBrains Mono" font-size="10" fill="#004F6B">INVERTER</text>
+            <path d="M80,60 L80,100 L160,100" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <rect x="290" y="70" width="90" height="60" rx="2" fill="none" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="300" y="64" font-family="JetBrains Mono" font-size="10" fill="#667085">LOAD</text>
+            <path d="M230,100 L290,100" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <rect x="290" y="20" width="90" height="34" rx="2" fill="none" stroke="#667085" stroke-width="1.25" stroke-dasharray="4 2"/>
+            <text x="300" y="14" font-family="JetBrains Mono" font-size="10" fill="#667085">GRID</text>
+            <path d="M335,54 L335,80" fill="none" stroke="#667085" stroke-width="1.25" stroke-dasharray="3 3"/>
+            <rect x="160" y="150" width="70" height="40" rx="2" fill="#0B1B22" opacity="0.05" stroke="#C6A56E" stroke-width="1.5"/>
+            <text x="163" y="175" font-family="JetBrains Mono" font-size="10" fill="#8A6D3F">BATTERY</text>
+            <path d="M195,120 L195,150" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-mono text-xs uppercase tracking-wide text-accent">Best for: Bill reduction and backup power</span>
+          <p class="mt-3 text-base leading-relaxed">Combines grid-tied solar with battery storage, so surplus daytime generation is stored and used to carry essential loads through an outage.</p>
+          <dl class="mt-6 space-y-4 border-t border-border pt-6 text-sm">
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Grid connection</dt><dd>Connected, with automatic switch-over to battery during loadshedding.</dd></div>
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Battery</dt><dd>Battery sized to your chosen backup duration.</dd></div>
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Backup</dt><dd>Seamless backup for the circuits you choose to protect.</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <div id="panel-off" class="sys-tab-panel gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div class="rounded-card border border-border bg-surface p-8">
+          <svg viewBox="0 0 400 220" class="w-full">
+            <rect x="20" y="20" width="120" height="40" rx="2" fill="none" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="20" y="14" font-family="JetBrains Mono" font-size="10" fill="#667085">PV ARRAY</text>
+            <rect x="160" y="80" width="70" height="40" rx="2" fill="#EAF2F5" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="164" y="105" font-family="JetBrains Mono" font-size="10" fill="#004F6B">INVERTER</text>
+            <path d="M80,60 L80,100 L160,100" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <rect x="290" y="70" width="90" height="60" rx="2" fill="none" stroke="#004F6B" stroke-width="1.5"/>
+            <text x="300" y="64" font-family="JetBrains Mono" font-size="10" fill="#667085">LOAD</text>
+            <path d="M230,100 L290,100" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <rect x="160" y="150" width="70" height="40" rx="2" fill="#0B1B22" opacity="0.05" stroke="#C6A56E" stroke-width="1.5"/>
+            <text x="163" y="175" font-family="JetBrains Mono" font-size="10" fill="#8A6D3F">BATTERY</text>
+            <path d="M195,120 L195,150" fill="none" stroke="#C6A56E" stroke-width="1.5" stroke-dasharray="3 3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-mono text-xs uppercase tracking-wide text-accent">Best for: Locations without reliable grid access</span>
+          <p class="mt-3 text-base leading-relaxed">A fully self-sufficient system — panels, batteries, and inverter sized to carry the entire site's load independently of the utility grid.</p>
+          <dl class="mt-6 space-y-4 border-t border-border pt-6 text-sm">
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Grid connection</dt><dd>None. Independent of the utility grid entirely.</dd></div>
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Battery</dt><dd>Larger battery bank sized for full daily load.</dd></div>
+            <div class="flex gap-4"><dt class="w-32 shrink-0 font-medium text-muted">Backup</dt><dd>Continuous — the site never depends on grid availability.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULATOR TEASER -->
+<section class="py-20 sm:py-28">
+  <div class="container-page">
+    <div class="grid items-center gap-10 rounded-card border border-border bg-surface-muted p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:gap-16">
+      <div>
+        <div class="h-11 w-11 rounded-md bg-primary-50 text-primary flex items-center justify-center text-lg">🧮</div>
+        <h2 class="mt-5 text-3xl sm:text-4xl font-bold">See Your Estimated System in Minutes</h2>
+        <p class="mt-3 max-w-lg text-sm leading-relaxed text-muted">Answer a few questions about your property and electricity usage to get an instant estimate of system size, generation, and potential savings.</p>
+        <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+          <li class="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-muted"><span class="h-1 w-1 rounded-full bg-accent"></span>Property type</li>
+          <li class="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-muted"><span class="h-1 w-1 rounded-full bg-accent"></span>Monthly bill</li>
+          <li class="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-muted"><span class="h-1 w-1 rounded-full bg-accent"></span>City</li>
+          <li class="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-muted"><span class="h-1 w-1 rounded-full bg-accent"></span>Battery backup needs</li>
+        </ul>
+      </div>
+      <a href="#" class="w-full lg:w-auto inline-flex items-center justify-center gap-2 h-13 rounded-md bg-primary px-7 text-base font-medium text-white hover:bg-primary-dark" style="height:3.25rem">Calculate My Solar System →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PACKAGES -->
+<section id="packages" class="py-20 sm:py-28">
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="max-w-xl"><span class="eyebrow">Solar Packages</span><h2 class="mt-3 text-3xl sm:text-4xl font-bold">Sized for Every Roof</h2></div>
+      <a href="#" class="inline-flex h-11 items-center rounded-md border border-border px-5 text-sm font-medium hover:border-primary hover:text-primary">View All Packages</a>
+    </div>
+    <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="rounded-card border border-border bg-surface shadow-card p-7 flex flex-col">
+        <span class="font-mono-num text-3xl text-primary">5 kW</span>
+        <p class="mt-1 text-sm text-muted">Recommended for residential use</p>
+        <ul class="mt-6 flex-1 space-y-2.5 border-t border-border pt-6 text-sm">
+          <li class="flex gap-2"><span class="text-accent">✓</span> ~650 kWh estimated / month</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 9 × 580W panels</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 5 kW hybrid-ready inverter</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> Battery: Optional — 5–7 kWh</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 10-year warranty</li>
+        </ul>
+        <div class="mt-6 flex gap-2">
+          <a href="#" class="flex-1 inline-flex h-11 items-center justify-center rounded-md border border-border text-sm font-medium">View Details</a>
+          <a href="#" class="flex-1 inline-flex h-11 items-center justify-center rounded-md bg-primary text-white text-sm font-medium">Request Price</a>
+        </div>
+      </div>
+      <div class="rounded-card border border-accent ring-1 ring-accent bg-surface shadow-card p-7 flex flex-col">
+        <span class="mb-4 w-fit inline-flex items-center rounded-full bg-accent-soft px-3 py-1 text-xs font-mono uppercase tracking-wide text-primary-dark">Most Popular</span>
+        <span class="font-mono-num text-3xl text-primary">10 kW</span>
+        <p class="mt-1 text-sm text-muted">Recommended for residential use</p>
+        <ul class="mt-6 flex-1 space-y-2.5 border-t border-border pt-6 text-sm">
+          <li class="flex gap-2"><span class="text-accent">✓</span> ~1,300 kWh estimated / month</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 18 × 580W panels</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 10 kW hybrid inverter</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> Battery: Recommended — 10–15 kWh</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 12-year warranty</li>
+        </ul>
+        <div class="mt-6 flex gap-2">
+          <a href="#" class="flex-1 inline-flex h-11 items-center justify-center rounded-md border border-border text-sm font-medium">View Details</a>
+          <a href="#" class="flex-1 inline-flex h-11 items-center justify-center rounded-md bg-primary text-white text-sm font-medium">Request Price</a>
+        </div>
+      </div>
+      <div class="rounded-card border border-border bg-surface shadow-card p-7 flex flex-col">
+        <span class="font-mono-num text-3xl text-primary">15 kW</span>
+        <p class="mt-1 text-sm text-muted">Recommended for commercial use</p>
+        <ul class="mt-6 flex-1 space-y-2.5 border-t border-border pt-6 text-sm">
+          <li class="flex gap-2"><span class="text-accent">✓</span> ~1,950 kWh estimated / month</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 26 × 580W panels</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 15–20 kW three-phase inverter</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> Battery: Optional — sized to critical load</li>
+          <li class="flex gap-2"><span class="text-accent">✓</span> 12-year warranty</li>
+        </ul>
+        <div class="mt-6 flex gap-2">
+          <a href="#" class="flex-1 inline-flex h-11 items-center justify-center rounded-md border border-border text-sm font-medium">View Details</a>
+          <a href="#" class="flex-1 inline-flex h-11 items-center justify-center rounded-md bg-primary text-white text-sm font-medium">Request Price</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" class="bg-surface-muted py-20 sm:py-28">
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="max-w-xl"><span class="eyebrow">Portfolio</span><h2 class="mt-3 text-3xl sm:text-4xl font-bold">Recent Installations</h2></div>
+      <a href="#" class="inline-flex h-11 items-center rounded-md border border-border px-5 text-sm font-medium hover:border-primary hover:text-primary">View All Projects</a>
+    </div>
+    <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <a href="#" class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow overflow-hidden block">
+        <div class="aspect-[4/3] bg-surface-muted overflow-hidden">
+          <svg viewBox="0 0 480 320" class="w-full h-full group-hover:scale-105 transition-transform duration-500">
+            <rect width="480" height="320" fill="#F7F9FA"/><rect y="220" width="480" height="100" fill="#EAF2F5"/>
+            <polygon points="40,220 240,120 440,220" fill="#004F6B" opacity="0.06"/>
+            <polyline points="40,220 240,120 440,220" fill="none" stroke="#004F6B" stroke-width="2"/>
+            <rect x="110" y="168" width="220" height="44" rx="2" fill="#FFFFFF" stroke="#004F6B" stroke-width="1.5"/>
+            <line x1="165" y1="168" x2="165" y2="212" stroke="#004F6B"/><line x1="220" y1="168" x2="220" y2="212" stroke="#004F6B"/><line x1="275" y1="168" x2="275" y2="212" stroke="#004F6B"/>
+            <line x1="110" y1="190" x2="330" y2="190" stroke="#004F6B"/>
+          </svg>
+        </div>
+        <div class="p-5">
+          <h3 class="font-semibold">10 kW Residential Solar</h3>
+          <p class="mt-1.5 flex items-center gap-1.5 text-sm text-muted">📍 Multan, Pakistan</p>
+          <span class="mt-3 inline-block font-mono text-xs uppercase tracking-wide text-accent">HYBRID System</span>
+        </div>
+      </a>
+      <a href="#" class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow overflow-hidden block">
+        <div class="aspect-[4/3] bg-surface-muted overflow-hidden">
+          <svg viewBox="0 0 480 320" class="w-full h-full group-hover:scale-105 transition-transform duration-500">
+            <rect width="480" height="320" fill="#F7F9FA"/><rect y="220" width="480" height="100" fill="#EAF2F5"/>
+            <polygon points="40,220 240,120 440,220" fill="#004F6B" opacity="0.06"/>
+            <polyline points="40,220 240,120 440,220" fill="none" stroke="#004F6B" stroke-width="2"/>
+            <rect x="110" y="168" width="220" height="44" rx="2" fill="#FFFFFF" stroke="#004F6B" stroke-width="1.5"/>
+            <line x1="165" y1="168" x2="165" y2="212" stroke="#004F6B"/><line x1="220" y1="168" x2="220" y2="212" stroke="#004F6B"/><line x1="275" y1="168" x2="275" y2="212" stroke="#004F6B"/>
+            <line x1="110" y1="190" x2="330" y2="190" stroke="#004F6B"/>
+          </svg>
+        </div>
+        <div class="p-5">
+          <h3 class="font-semibold">20 kW Commercial Solar</h3>
+          <p class="mt-1.5 flex items-center gap-1.5 text-sm text-muted">📍 Lahore, Pakistan</p>
+          <span class="mt-3 inline-block font-mono text-xs uppercase tracking-wide text-accent">ON-GRID System</span>
+        </div>
+      </a>
+      <a href="#" class="group rounded-card border border-border bg-surface shadow-card hover:shadow-elevated transition-shadow overflow-hidden block">
+        <div class="aspect-[4/3] bg-surface-muted overflow-hidden">
+          <svg viewBox="0 0 480 320" class="w-full h-full group-hover:scale-105 transition-transform duration-500">
+            <rect width="480" height="320" fill="#F7F9FA"/><rect y="220" width="480" height="100" fill="#EAF2F5"/>
+            <polygon points="40,220 240,120 440,220" fill="#004F6B" opacity="0.06"/>
+            <polyline points="40,220 240,120 440,220" fill="none" stroke="#004F6B" stroke-width="2"/>
+            <rect x="110" y="168" width="220" height="44" rx="2" fill="#FFFFFF" stroke="#004F6B" stroke-width="1.5"/>
+            <line x1="165" y1="168" x2="165" y2="212" stroke="#004F6B"/><line x1="220" y1="168" x2="220" y2="212" stroke="#004F6B"/><line x1="275" y1="168" x2="275" y2="212" stroke="#004F6B"/>
+            <line x1="110" y1="190" x2="330" y2="190" stroke="#004F6B"/>
+          </svg>
+        </div>
+        <div class="p-5">
+          <h3 class="font-semibold">7 kW Residential Solar</h3>
+          <p class="mt-1.5 flex items-center gap-1.5 text-sm text-muted">📍 Islamabad, Pakistan</p>
+          <span class="mt-3 inline-block font-mono text-xs uppercase tracking-wide text-accent">HYBRID System</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US -->
+<section class="py-20 sm:py-28">
+  <div class="container-page">
+    <div class="max-w-2xl"><span class="eyebrow">Why Choose Us</span><h2 class="mt-3 text-3xl sm:text-4xl font-bold">Built Around Quality. Designed for Performance.</h2></div>
+    <div class="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="flex gap-4"><span class="mt-1 text-accent">◆</span><div><h3 class="font-semibold">Professional Engineering</h3><p class="mt-1.5 text-sm leading-relaxed text-muted">System design based on your actual load, roof geometry, and site conditions.</p></div></div>
+      <div class="flex gap-4"><span class="mt-1 text-accent">◆</span><div><h3 class="font-semibold">Premium Components</h3><p class="mt-1.5 text-sm leading-relaxed text-muted">Panels, inverters, and batteries selected for reliability under local conditions.</p></div></div>
+      <div class="flex gap-4"><span class="mt-1 text-accent">◆</span><div><h3 class="font-semibold">Expert Installation</h3><p class="mt-1.5 text-sm leading-relaxed text-muted">Trained teams following documented safety and quality procedures.</p></div></div>
+      <div class="flex gap-4"><span class="mt-1 text-accent">◆</span><div><h3 class="font-semibold">Transparent Quotations</h3><p class="mt-1.5 text-sm leading-relaxed text-muted">Itemized quotes shown separately, not bundled into a vague total.</p></div></div>
+      <div class="flex gap-4"><span class="mt-1 text-accent">◆</span><div><h3 class="font-semibold">Warranty Support</h3><p class="mt-1.5 text-sm leading-relaxed text-muted">Manufacturer warranties honored and tracked from installation day one.</p></div></div>
+      <div class="flex gap-4"><span class="mt-1 text-accent">◆</span><div><h3 class="font-semibold">After-Sales Service</h3><p class="mt-1.5 text-sm leading-relaxed text-muted">Maintenance and monitoring support after commissioning.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="bg-ink py-20 sm:py-28 text-white">
+  <div class="container-page">
+    <div class="max-w-xl"><span class="eyebrow">How It Works</span><h2 class="mt-3 text-3xl sm:text-4xl font-bold">From First Call to Commissioning</h2></div>
+    <div class="mt-14 hidden lg:grid grid-cols-6 gap-4">
+      <div><div class="flex items-center"><span class="font-mono text-sm text-accent">01</span><div class="ml-3 h-px flex-1 bg-white/15"></div></div><h3 class="mt-4 font-semibold">Consultation</h3><p class="mt-1.5 text-sm text-white/60">We understand your usage, budget, and goals.</p></div>
+      <div><div class="flex items-center"><span class="font-mono text-sm text-accent">02</span><div class="ml-3 h-px flex-1 bg-white/15"></div></div><h3 class="mt-4 font-semibold">Site Survey</h3><p class="mt-1.5 text-sm text-white/60">Engineers assess roof, shading, and electrical setup.</p></div>
+      <div><div class="flex items-center"><span class="font-mono text-sm text-accent">03</span><div class="ml-3 h-px flex-1 bg-white/15"></div></div><h3 class="mt-4 font-semibold">System Design</h3><p class="mt-1.5 text-sm text-white/60">Sized to your actual load, not a generic package.</p></div>
+      <div><div class="flex items-center"><span class="font-mono text-sm text-accent">04</span><div class="ml-3 h-px flex-1 bg-white/15"></div></div><h3 class="mt-4 font-semibold">Quotation</h3><p class="mt-1.5 text-sm text-white/60">Itemized quote covering equipment, labor, timeline.</p></div>
+      <div><div class="flex items-center"><span class="font-mono text-sm text-accent">05</span><div class="ml-3 h-px flex-1 bg-white/15"></div></div><h3 class="mt-4 font-semibold">Installation</h3><p class="mt-1.5 text-sm text-white/60">Installed to documented safety and quality standards.</p></div>
+      <div><div class="flex items-center"><span class="font-mono text-sm text-accent">06</span></div><h3 class="mt-4 font-semibold">Support</h3><p class="mt-1.5 text-sm text-white/60">Commissioning, warranty registration, maintenance.</p></div>
+    </div>
+    <div class="mt-12 space-y-8 lg:hidden">
+      <div class="flex gap-5"><span class="font-mono text-sm text-accent">01</span><div><h3 class="font-semibold">Consultation</h3><p class="mt-1.5 text-sm text-white/60">We understand your usage, budget, and goals.</p></div></div>
+      <div class="flex gap-5"><span class="font-mono text-sm text-accent">02</span><div><h3 class="font-semibold">Site Survey</h3><p class="mt-1.5 text-sm text-white/60">Engineers assess roof, shading, and electrical setup.</p></div></div>
+      <div class="flex gap-5"><span class="font-mono text-sm text-accent">03</span><div><h3 class="font-semibold">System Design</h3><p class="mt-1.5 text-sm text-white/60">Sized to your actual load.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="py-20 sm:py-28">
+  <div class="container-page">
+    <div class="max-w-xl"><span class="eyebrow">Customer Stories</span><h2 class="mt-3 text-3xl sm:text-4xl font-bold">What Customers Say</h2></div>
+    <div class="mt-12 grid gap-5 sm:grid-cols-3">
+      <div class="rounded-card border border-border bg-surface shadow-card p-7">
+        <div class="text-accent">★★★★★</div>
+        <p class="mt-4 text-sm leading-relaxed">"[SAMPLE TESTIMONIAL] Replace with a real customer quote before publishing."</p>
+        <div class="mt-5 border-t border-border pt-4"><p class="text-sm font-semibold">Ahmed R.</p><p class="text-xs text-muted">Multan · 10 kW Residential</p></div>
+      </div>
+      <div class="rounded-card border border-border bg-surface shadow-card p-7">
+        <div class="text-accent">★★★★★</div>
+        <p class="mt-4 text-sm leading-relaxed">"[SAMPLE TESTIMONIAL] Replace with a real customer quote before publishing."</p>
+        <div class="mt-5 border-t border-border pt-4"><p class="text-sm font-semibold">Sana K.</p><p class="text-xs text-muted">Lahore · 20 kW System</p></div>
+      </div>
+      <div class="rounded-card border border-border bg-surface shadow-card p-7">
+        <div class="text-accent">★★★★☆</div>
+        <p class="mt-4 text-sm leading-relaxed">"[SAMPLE TESTIMONIAL] Replace with a real customer quote before publishing."</p>
+        <div class="mt-5 border-t border-border pt-4"><p class="text-sm font-semibold">Bilal H.</p><p class="text-xs text-muted">Islamabad · 7 kW Residential</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="bg-surface-muted py-20 sm:py-28">
+  <div class="container-page grid gap-10 lg:grid-cols-[0.9fr_1.4fr]">
+    <div>
+      <span class="eyebrow">FAQ</span>
+      <h2 class="mt-3 text-3xl sm:text-4xl font-bold">Common Questions</h2>
+      <a href="#" class="mt-5 inline-flex h-11 items-center rounded-md border border-border px-5 text-sm font-medium hover:border-primary hover:text-primary">View All FAQs</a>
+    </div>
+    <div class="divide-y divide-border border-y border-border">
+      <details open class="py-5 group"><summary class="cursor-pointer list-none flex items-center justify-between font-medium">How many solar panels do I need? <span class="text-muted group-open:rotate-180 transition-transform">⌄</span></summary><p class="mt-3 text-sm leading-relaxed text-muted">Depends on usage, roof area, and how much of your load you want to offset. Use the calculator for an instant estimate.</p></details>
+      <details class="py-5 group"><summary class="cursor-pointer list-none flex items-center justify-between font-medium">How much does a solar system cost? <span class="text-muted group-open:rotate-180 transition-transform">⌄</span></summary><p class="mt-3 text-sm leading-relaxed text-muted">Depends on system size, equipment tier, and site complexity — request a current price for your requirement.</p></details>
+      <details class="py-5 group"><summary class="cursor-pointer list-none flex items-center justify-between font-medium">What's the difference between hybrid and on-grid? <span class="text-muted group-open:rotate-180 transition-transform">⌄</span></summary><p class="mt-3 text-sm leading-relaxed text-muted">On-grid reduces your bill but shuts off during an outage. Hybrid adds battery storage for backup power too.</p></details>
+      <details class="py-5 group"><summary class="cursor-pointer list-none flex items-center justify-between font-medium">Do solar panels work during loadshedding? <span class="text-muted group-open:rotate-180 transition-transform">⌄</span></summary><p class="mt-3 text-sm leading-relaxed text-muted">Only with a hybrid or off-grid system with battery storage — a plain on-grid system shuts off for safety.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="relative overflow-hidden bg-primary py-20 sm:py-24">
+  <div class="pointer-events-none absolute inset-0 opacity-40" style="background: radial-gradient(ellipse 50% 60% at 20% 20%, rgba(198,165,110,0.18), transparent 70%)"></div>
+  <div class="container-page relative text-center">
+    <h2 class="mx-auto max-w-2xl text-3xl sm:text-4xl font-bold text-white">Start Saving With Solar Today</h2>
+    <p class="mx-auto mt-4 max-w-md text-white/70">Get a free, no-obligation quote from a solar expert — most requests receive a response within one business day.</p>
+    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+      <a href="#" class="inline-flex items-center justify-center h-13 rounded-md bg-accent px-7 text-base font-medium text-ink hover:bg-accent/90" style="height:3.25rem">Get Free Quote</a>
+      <a href="#" class="inline-flex items-center justify-center h-13 rounded-md border border-white/25 px-7 text-base font-medium text-white hover:border-accent hover:text-accent" style="height:3.25rem">Talk to an Expert</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-primary text-white">
+  <div class="container-page grid gap-12 py-16 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+    <div>
+      <span class="font-display text-xl font-bold">[COMPANY NAME]</span>
+      <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/70">Professional solar design, installation, and after-sales support for homes and businesses across Pakistan.</p>
+      <div class="mt-6 h-px w-12 bg-accent"></div>
+      <div class="mt-6 space-y-3 text-sm text-white/80">
+        <p>📞 [PHONE NUMBER]</p>
+        <p>✉️ [COMPANY EMAIL]</p>
+        <p>📍 [OFFICE ADDRESS]</p>
+      </div>
+    </div>
+    <div><h3 class="font-mono text-xs uppercase tracking-[0.14em] text-accent">Solar Solutions</h3><ul class="mt-4 space-y-2.5 text-sm text-white/75"><li>Residential Solar</li><li>Commercial Solar</li><li>Hybrid Solar</li><li>Off-Grid Solar</li></ul></div>
+    <div><h3 class="font-mono text-xs uppercase tracking-[0.14em] text-accent">Products</h3><ul class="mt-4 space-y-2.5 text-sm text-white/75"><li>Solar Panels</li><li>Inverters</li><li>Batteries</li><li>Mounting Structures</li></ul></div>
+    <div><h3 class="font-mono text-xs uppercase tracking-[0.14em] text-accent">Resources</h3><ul class="mt-4 space-y-2.5 text-sm text-white/75"><li>Solar Calculator</li><li>Projects</li><li>Blog</li><li>Net Metering</li><li>FAQ</li></ul></div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="container-page flex flex-col sm:flex-row items-center justify-between gap-4 py-6 text-xs text-white/60">
+      <span>© 2026 [COMPANY NAME]. All rights reserved.</span>
+      <div class="flex items-center gap-6"><span>Privacy Policy</span><span>Terms & Conditions</span><span>WhatsApp</span></div>
+    </div>
+  </div>
+</footer>
+
+<!-- floating CTAs -->
+<a href="#" class="fixed bottom-5 right-5 z-40 h-14 w-14 rounded-full bg-[#25D366] text-white shadow-elevated hidden sm:flex items-center justify-center text-xl hover:scale-105 transition-transform">💬</a>
+<a href="#" class="fixed bottom-24 right-5 z-40 h-12 w-12 rounded-full border border-border bg-surface text-primary shadow-card hidden sm:flex items-center justify-center hover:scale-105 transition-transform">📞</a>
+
+</body>
+</html>
