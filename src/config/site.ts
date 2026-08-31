@@ -20,7 +20,6 @@ export const siteConfig = {
     { label: "Solar Solutions", href: "/solar-systems" },
     { label: "Packages", href: "/packages" },
     { label: "Products", href: "/products" },
-    { label: "Projects", href: "/projects" },
     { label: "Calculator", href: "/solar-calculator" },
     { label: "About", href: "/about" },
     { label: "Blog", href: "/blog" },

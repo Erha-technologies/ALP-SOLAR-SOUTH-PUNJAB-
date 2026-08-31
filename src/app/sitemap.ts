@@ -9,7 +9,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/solar-systems",
     "/packages",
     "/products",
-    "/projects",
     "/solar-calculator",
     "/about",
     "/contact",

@@ -26,7 +26,6 @@ const footerColumns = [
     title: "Resources",
     links: [
       { label: "Solar Calculator", href: "/solar-calculator" },
-      { label: "Projects", href: "/projects" },
       { label: "Blog", href: "/blog" },
       { label: "Net Metering", href: "/net-metering" },
       { label: "FAQ", href: "/faq" },

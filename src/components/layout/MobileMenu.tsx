@@ -51,10 +51,10 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
                 href={item.href}
                 prefetch={true}
                 onClick={onClose}
-                className={`rounded-xl px-4 py-3 text-base font-bold transition-all ${
+                className={`rounded-xl px-4 py-3.5 text-lg font-extrabold transition-all ${
                   isActive
                     ? "bg-[#0F2D52] text-white shadow-md font-black"
-                    : "text-slate-700 hover:bg-sky-50 hover:text-[#0F2D52]"
+                    : "text-slate-800 hover:bg-sky-50 hover:text-[#0F2D52]"
                 }`}
               >
                 {item.label}

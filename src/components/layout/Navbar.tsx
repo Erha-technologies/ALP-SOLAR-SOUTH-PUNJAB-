@@ -37,7 +37,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden items-center gap-0.5 xl:gap-1 2xl:gap-1.5 lg:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-1 xl:gap-2 lg:flex" aria-label="Primary">
             {siteConfig.nav.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -45,10 +45,10 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   prefetch={true}
-                  className={`text-[11px] xl:text-xs 2xl:text-sm font-bold transition-all duration-200 px-2 xl:px-2.5 py-1.5 rounded-xl whitespace-nowrap ${
+                  className={`text-xs lg:text-sm xl:text-base font-bold transition-all duration-200 px-2.5 lg:px-3.5 py-2 rounded-xl whitespace-nowrap ${
                     isActive
                       ? "bg-[#0F2D52] text-white shadow-md font-black"
-                      : "text-slate-700 hover:text-[#0F2D52] hover:bg-sky-50 hover:scale-[1.03]"
+                      : "text-slate-800 hover:text-[#0F2D52] hover:bg-sky-50 hover:scale-[1.03]"
                   }`}
                 >
                   {item.label}
