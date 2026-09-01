@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -55,11 +55,19 @@ const INITIAL_SUGGESTIONS = [
   "کیا آپ ملتان اور بہاولپور میں کام کرتے ہیں؟",
 ];
 
+function generateUniqueId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+function getFormattedTime() {
+  if (typeof window === "undefined") return "Just now";
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 /**
  * Lightweight helper to render structured text with Markdown (Bold, Lists, Paragraphs)
  */
 function FormattedMessageText({ content }: { content: string }) {
-  // Split into lines
   const lines = content.split("\n");
 
   return (
@@ -116,26 +124,127 @@ function renderFormattedInline(text: string) {
 
 export function ChatWidget() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome-msg",
-      role: "assistant",
-      content:
-        "Hello! I am your ALP Solar AI Assistant. How can I help you today? Ask me about solar packages, AlpSolarr inverters, MEPCO net metering, or calculate an instant quote!",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [voiceLiveTranscript, setVoiceLiveTranscript] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<unknown>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const fullTranscriptRef = useRef<string>("");
+  const isSubmittingRef = useRef<boolean>(false);
 
-  // Initialize Speech Recognition & Synthesis capability check
+  // Mark mounted on client to prevent any SSR hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+    setMessages([
+      {
+        id: "welcome-msg",
+        role: "assistant",
+        content:
+          "Hello! I am your ALP Solar AI Assistant. How can I help you today? Ask me about solar packages, AlpSolarr inverters, MEPCO net metering, or calculate an instant quote!",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      },
+    ]);
+  }, []);
+
+  const handleSendMessage = useCallback(
+    async (textToSend?: string) => {
+      const query = (textToSend || input).trim();
+      if (!query || isLoading || isSubmittingRef.current) return;
+
+      isSubmittingRef.current = true;
+      setInput("");
+      setVoiceLiveTranscript("");
+
+      const userMessage: Message = {
+        id: generateUniqueId("usr"),
+        role: "user",
+        content: query,
+        timestamp: getFormattedTime(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setIsLoading(true);
+
+      try {
+        const history = messages
+          .filter((m) => m.id !== "welcome-msg")
+          .map((m) => ({
+            role: m.role === "assistant" ? ("model" as const) : ("user" as const),
+            content: m.content,
+          }));
+
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: query, history }),
+        });
+
+        const data = await res.json();
+
+        const assistantMessage: Message = {
+          id: generateUniqueId("ast"),
+          role: "assistant",
+          content:
+            data.reply ||
+            "I do not have information about this. You can contact us on our WhatsApp for more details.",
+          actions: data.actions || [],
+          timestamp: getFormattedTime(),
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+
+        // Speak response if TTS is enabled
+        if (ttsEnabled && typeof window !== "undefined" && "speechSynthesis" in window) {
+          try {
+            window.speechSynthesis.cancel();
+            const cleanSpeech = assistantMessage.content.replace(/[*#_`[\]()]/g, " ").trim();
+            const utterance = new SpeechSynthesisUtterance(cleanSpeech);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+          } catch (e) {
+            console.warn("TTS Error:", e);
+          }
+        }
+
+        // Handle Client Navigation Actions automatically if Maps_to_page triggered
+        if (data.actions && data.actions.length > 0) {
+          for (const action of data.actions) {
+            if (action.type === "Maps_to_page" && action.payload?.path) {
+              const targetPath = action.payload.path;
+              setTimeout(() => {
+                router.push(targetPath);
+              }, 1200);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Chat error:", err);
+        const fallbackMessage: Message = {
+          id: generateUniqueId("err"),
+          role: "assistant",
+          content:
+            "I do not have information about this. You can contact us on our WhatsApp for more details.",
+          timestamp: getFormattedTime(),
+        };
+        setMessages((prev) => [...prev, fallbackMessage]);
+      } finally {
+        setIsLoading(false);
+        isSubmittingRef.current = false;
+      }
+    },
+    [input, isLoading, messages, router, ttsEnabled]
+  );
+
+  // Initialize Speech Recognition with continuous sentence capturing & silence detection
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition =
@@ -151,41 +260,86 @@ export function ChatWidget() {
             continuous: boolean;
             interimResults: boolean;
             lang: string;
-            onresult: (e: { results: Array<Array<{ transcript: string }>> }) => void;
+            onresult: (e: {
+              resultIndex: number;
+              results: Array<{
+                isFinal: boolean;
+                [key: number]: { transcript: string };
+              }>;
+            }) => void;
             onerror: (e: unknown) => void;
             onend: () => void;
             start: () => void;
             stop: () => void;
           })();
-          rec.continuous = false;
-          rec.interimResults = false;
+
+          rec.continuous = true;
+          rec.interimResults = true;
           rec.lang = "en-US";
 
-          rec.onresult = (event: { results: Array<Array<{ transcript: string }>> }) => {
-            const transcript = event.results?.[0]?.[0]?.transcript;
-            if (transcript) {
-              setInput(transcript);
-              handleSendMessage(transcript);
+          rec.onresult = (event) => {
+            let interimTranscript = "";
+            let finalAccumulated = "";
+
+            for (let i = 0; i < event.results.length; ++i) {
+              const result = event.results[i];
+              if (result && result[0]) {
+                if (result.isFinal) {
+                  finalAccumulated += result[0].transcript + " ";
+                } else {
+                  interimTranscript += result[0].transcript;
+                }
+              }
             }
-            setIsListening(false);
+
+            const currentFullText = (finalAccumulated + interimTranscript).trim();
+            fullTranscriptRef.current = currentFullText;
+            setVoiceLiveTranscript(currentFullText);
+            setInput(currentFullText);
+
+            // Reset silence timer on every speech event
+            if (silenceTimerRef.current) {
+              clearTimeout(silenceTimerRef.current);
+            }
+
+            // If user pauses for 1.8 seconds after speaking, auto-submit the full sentence
+            silenceTimerRef.current = setTimeout(() => {
+              const sentenceToSubmit = fullTranscriptRef.current.trim();
+              if (sentenceToSubmit && !isSubmittingRef.current) {
+                try {
+                  rec.stop();
+                } catch {
+                  // ignore
+                }
+                setIsListening(false);
+                setVoiceLiveTranscript("");
+                handleSendMessage(sentenceToSubmit);
+              }
+            }, 1800);
           };
 
           rec.onerror = (err) => {
             console.warn("Speech recognition error:", err);
             setIsListening(false);
+            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
           };
 
           rec.onend = () => {
             setIsListening(false);
+            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
           };
 
           recognitionRef.current = rec;
         } catch (e) {
-          console.warn("Speech recognition initialization failed:", e);
+          console.warn("Speech recognition initialization error:", e);
         }
       }
     }
-  }, []);
+
+    return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    };
+  }, [handleSendMessage]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -193,23 +347,6 @@ export function ChatWidget() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen, isLoading]);
-
-  // Handle Speech Output (TTS)
-  const speakText = (text: string) => {
-    if (!ttsEnabled || typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
-    }
-    try {
-      window.speechSynthesis.cancel();
-      const cleanSpeech = text.replace(/[*#_`[\]()]/g, " ").trim();
-      const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.warn("TTS Error:", e);
-    }
-  };
 
   const toggleVoiceInput = () => {
     if (!recognitionRef.current) {
@@ -219,9 +356,17 @@ export function ChatWidget() {
     try {
       const rec = recognitionRef.current as { start: () => void; stop: () => void };
       if (isListening) {
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         rec.stop();
         setIsListening(false);
+        const sentenceToSubmit = fullTranscriptRef.current.trim();
+        if (sentenceToSubmit) {
+          handleSendMessage(sentenceToSubmit);
+        }
       } else {
+        fullTranscriptRef.current = "";
+        setVoiceLiveTranscript("");
+        setInput("");
         setIsListening(true);
         rec.start();
       }
@@ -231,93 +376,24 @@ export function ChatWidget() {
     }
   };
 
-  const handleSendMessage = async (textToSend?: string) => {
-    const query = (textToSend || input).trim();
-    if (!query || isLoading) return;
-
-    setInput("");
-
-    const userMessage: Message = {
-      id: `usr-${Date.now()}`,
-      role: "user",
-      content: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-
-    try {
-      const history = messages
-        .filter((m) => m.id !== "welcome-msg")
-        .map((m) => ({
-          role: m.role === "assistant" ? ("model" as const) : ("user" as const),
-          content: m.content,
-        }));
-
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: query, history }),
-      });
-
-      const data = await res.json();
-
-      const assistantMessage: Message = {
-        id: `ast-${Date.now()}`,
-        role: "assistant",
-        content:
-          data.reply ||
-          "I do not have information about this. You can contact us on our WhatsApp for more details.",
-        actions: data.actions || [],
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      // Speak response if TTS is enabled
-      speakText(assistantMessage.content);
-
-      // Handle Client Navigation Actions automatically if Maps_to_page triggered
-      if (data.actions && data.actions.length > 0) {
-        for (const action of data.actions) {
-          if (action.type === "Maps_to_page" && action.payload?.path) {
-            const targetPath = action.payload.path;
-            setTimeout(() => {
-              router.push(targetPath);
-            }, 1200);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Chat error:", err);
-      const fallbackMessage: Message = {
-        id: `err-${Date.now()}`,
-        role: "assistant",
-        content:
-          "I do not have information about this. You can contact us on our WhatsApp for more details.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, fallbackMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleClearChat = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
     setMessages([
       {
-        id: `welcome-${Date.now()}`,
+        id: generateUniqueId("welcome"),
         role: "assistant",
         content:
           "Chat reset! What would you like to know about ALP Solar systems, net metering, or quotations?",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: getFormattedTime(),
       },
     ]);
   };
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
@@ -423,6 +499,22 @@ export function ChatWidget() {
             </div>
           </div>
 
+          {/* Voice Live Listening Notification Banner */}
+          {isListening && (
+            <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 px-4 py-2 text-xs font-semibold text-white animate-pulse shadow-inner">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-white animate-ping" />
+                <span>Listening... Speak your full question now</span>
+              </div>
+              <button
+                onClick={toggleVoiceInput}
+                className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold hover:bg-white/30"
+              >
+                Done
+              </button>
+            </div>
+          )}
+
           {/* Chat Messages Body (Clean Slate-50 Background) */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#F8FAFC]">
             {messages.map((msg) => (
@@ -447,7 +539,7 @@ export function ChatWidget() {
                           const q = act.payload.quote;
                           return (
                             <div
-                              key={idx}
+                              key={`quote-${msg.id}-${idx}`}
                               className="rounded-xl border-2 border-amber-400 bg-amber-50/50 p-3.5 text-slate-900 shadow-sm space-y-2.5"
                             >
                               <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
@@ -497,7 +589,7 @@ export function ChatWidget() {
                           const path = act.payload.path;
                           return (
                             <button
-                              key={idx}
+                              key={`map-${msg.id}-${idx}`}
                               onClick={() => router.push(path)}
                               className="flex w-full items-center justify-between rounded-xl border border-sky-200 bg-sky-50 p-2.5 text-xs font-semibold text-sky-800 transition hover:bg-sky-100 hover:text-sky-950"
                             >
@@ -536,7 +628,7 @@ export function ChatWidget() {
           </div>
 
           {/* Quick Suggestions Chips */}
-          {messages.length <= 2 && !isLoading && (
+          {messages.length <= 2 && !isLoading && !isListening && (
             <div className="flex gap-1.5 overflow-x-auto px-4 py-2 scrollbar-none border-t border-slate-200 bg-white">
               {INITIAL_SUGGESTIONS.map((sug, i) => (
                 <button
@@ -550,7 +642,7 @@ export function ChatWidget() {
             </div>
           )}
 
-          {/* Input Area (Light Theme matching Website) */}
+          {/* Input Area */}
           <div className="border-t border-slate-200 bg-white p-3">
             <form
               onSubmit={(e) => {
@@ -569,7 +661,7 @@ export function ChatWidget() {
                       ? "bg-red-500 text-white animate-pulse shadow-md shadow-red-500/40"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 border border-slate-200"
                   }`}
-                  title={isListening ? "Listening... Click to stop" : "Speak with Voice"}
+                  title={isListening ? "Listening... Click when done speaking" : "Speak your full question"}
                   aria-label="Voice Input"
                 >
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -579,9 +671,12 @@ export function ChatWidget() {
               {/* Text Input Field */}
               <input
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={isListening ? "Listening..." : "Ask about solar packages, net metering..."}
+                value={voiceLiveTranscript || input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  setVoiceLiveTranscript("");
+                }}
+                placeholder={isListening ? "Listening... speak full sentence" : "Ask about solar packages, net metering..."}
                 disabled={isLoading}
                 className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#0F2D52] focus:outline-none focus:ring-1 focus:ring-[#0F2D52] transition disabled:opacity-50"
               />
@@ -589,7 +684,7 @@ export function ChatWidget() {
               {/* Send Button */}
               <button
                 type="submit"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !(input || voiceLiveTranscript).trim()}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0F2D52] text-white transition hover:bg-[#163D6B] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
                 aria-label="Send Message"
               >
