@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import { CallButton } from "@/components/shared/CallButton";
+import { ChatWidget } from "@/components/ChatWidget";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -139,6 +140,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <WhatsAppButton />
         <CallButton />
+        <ChatWidget />
       </body>
     </html>
   );

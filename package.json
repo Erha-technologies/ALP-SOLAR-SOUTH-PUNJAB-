@@ -18,8 +18,10 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.20.0",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.20.0",
+    "@supabase/supabase-js": "^2.112.4",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "framer-motion": "^11.5.0",
