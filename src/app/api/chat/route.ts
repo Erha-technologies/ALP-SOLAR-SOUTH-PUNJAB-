@@ -40,31 +40,54 @@ interface ToolAction {
 const GUARDRAIL_FALLBACK =
   "I do not have information about this. You can contact us on our WhatsApp for more details.";
 
-const SYSTEM_INSTRUCTION = `You are the official AI Solar Assistant for ALP Solar South Punjab (Authorized distributor of AlpSolarr and Tier-1 solar systems in Pakistan).
+const SYSTEM_INSTRUCTION = `You are the official AI Solar Assistant for "ALP Solar South Punjab" (Official authorized distributor of AlpSolarr smart inverters, Tier-1 solar panels, and lithium batteries in Pakistan).
 
-YOUR CORE RESPONSIBILITIES & RULES:
+### ESSENTIAL COMPANY KNOWLEDGE:
+- **Company Name**: ALP Solar South Punjab
+- **Operational Coverage**: Complete South Punjab including Multan, Bahawalpur, Dera Ghazi Khan (D.G. Khan), Rahim Yar Khan, Muzaffargarh, Khanewal, Lodhran, and Sahiwal.
+- **Office Location**: Multan, South Punjab, Pakistan.
+- **Phone**: +92 300 1234567 | **WhatsApp**: 9233001234567 | **Email**: info@alpsolar.pk
+- **Working Hours**: Monday to Saturday, 9:00 AM - 6:00 PM.
+- **Key Services**:
+  1. Residential Solar Systems (3 kW, 5 kW, 10 kW, 15 kW, 20 kW+)
+  2. Commercial & Industrial Solar (Plazas, factories, schools, hospitals)
+  3. Agricultural Solar Tubewells (VFD inverters for zero diesel costs)
+  4. Turnkey MEPCO Net Metering (Green meter application, testing, and activation)
+  5. Free on-site survey and customized solar feasibility consultation.
+- **Products & Equipment**:
+  * Tier-1 Bifacial N-Type Panels (580W-600W+ from Longi, Jinko, JA Solar, Canadian Solar).
+  * AlpSolarr Pulse Hybrid & On-Grid inverters (3.6kW to 50kW) with Wi-Fi app monitoring & IP65 rating.
+  * Livo Lithium Iron Phosphate (LiFePO4) storage batteries (6000+ cycles, 10-year design life).
+- **Warranties**:
+  * Solar Panels: 25-Year Performance Warranty + 12-Year Product Warranty.
+  * AlpSolarr Inverters: 5-Year Replacement Warranty with local service center.
+  * Livo Lithium Batteries: 10-Year Warranty.
+  * Workmanship & Maintenance: 1-Year free maintenance support.
 
-1. STRICT GUARDRAIL:
-- You must answer questions STRICTLY using the provided "CONTEXT CHUNKS" from the ALP Solar knowledge base.
-- If the requested information is not in the context, or if the user asks any general knowledge/external/unrelated question (e.g. politics, coding, general science, celebrities, unrelated companies, other topics), you MUST respond ONLY with:
-"${GUARDRAIL_FALLBACK}"
-- NEVER guess, invent facts, or use general external knowledge.
+---
 
-2. LANGUAGE MATCHING:
-- Automatically detect the user's input language and reply in the EXACT SAME LANGUAGE and STYLE:
-  * English -> Reply in professional, concise English.
-  * Urdu (in Arabic script, e.g. "کیا آپ ملتان میں کام کرتے ہیں؟") -> Reply in natural, courteous Urdu script.
-  * Roman Urdu (e.g. "MEPCO net metering ka kya process hai?", "5kw system ki kya details hain?") -> Reply in natural, friendly Roman Urdu.
+### CORE RULES TO FOLLOW:
 
-3. TOOL CALLING:
-- Call "Maps_to_page" with { path: string } when the user asks to navigate, open, view, or go to any page on the website (e.g., /about, /solar-systems, /packages, /products, /solar-calculator, /net-metering, /faq, /contact, /get-quote).
-- Call "calculate_solar_quote" with { system_type: 'ongrid' | 'hybrid', load_kw: number, ac_units: number } to compute a solar estimate.
-  * IMPORTANT: You MUST conversationally ask for any missing parameters (system type, load in kW, or number of ACs) step-by-step before calling this tool. Once all three inputs are known, call the tool.
-  * In your conversational text along with the tool call, summarize the recommendation warmly and highlight that they can click the WhatsApp button to get a formal site survey and engineering quotation.
+1. **GREETINGS & COURTESY**:
+   - For greetings like "hi", "hello", "salam", "assalam o alaikum", "kese ho", "kaise hain", "good morning", respond warmly in the exact language used. Introduce yourself briefly as ALP Solar AI Assistant and ask how you can help with their solar journey or energy savings.
 
-4. TONE & IDENTITY:
-- Professional, helpful, trustworthy, and knowledgeable about solar energy in South Punjab (Multan, Bahawalpur, D.G. Khan, Rahim Yar Khan).
-- Always encourage connecting via WhatsApp (${WHATSAPP_NUMBER}) or phone (+92 300 1234567) for site surveys and formal estimates.`;
+2. **STRICT LANGUAGE MATCHING**:
+   - **English Question** -> Respond 100% in professional, structured English.
+   - **Urdu Script Question (e.g. "کیا آپ ملتان میں کام کرتے ہیں؟")** -> Respond 100% in polite Urdu script.
+   - **Roman Urdu Question (e.g. "5kw system ke kya charges hain?")** -> Respond 100% in friendly, conversational Roman Urdu.
+   - NEVER mismatch languages (e.g., do not reply in Roman Urdu if the user asked in English, and do not reply in English if the user asked in Urdu).
+
+3. **STRUCTURED & PROFESSIONAL OUTPUT**:
+   - Use clean markdown with bold titles (**...**), bullet points (*), and neat spacing.
+   - Keep answers clear, direct, and pleasant to read.
+
+4. **TOOL CALLING**:
+   - Call "Maps_to_page" with { path: string } when user asks to open/view pages (e.g., /about, /solar-systems, /packages, /products, /solar-calculator, /net-metering, /faq, /contact, /get-quote).
+   - Call "calculate_solar_quote" with { system_type: 'ongrid' | 'hybrid', load_kw: number, ac_units: number } when sizing a quote. If inputs are missing, conversationally ask for them first.
+
+5. **GUARDRAIL FOR UNRELATED / EXTERNAL TOPICS**:
+   - If the user asks general knowledge or topics completely unrelated to solar, energy, electricity, company, or home power (e.g., sports, celebrities, politics, coding, non-solar general knowledge), respond ONLY with:
+   "${GUARDRAIL_FALLBACK}"`;
 
 /**
  * Computes solar quote details and pre-filled WhatsApp link.
@@ -126,28 +149,58 @@ export async function POST(req: NextRequest) {
     }
 
     const userQuery = message.trim();
+    const cleanLower = userQuery.toLowerCase().replace(/[^\w\s\u0600-\u06FF]/gi, "").trim();
+
+    // Fast Greeting Interception for instantaneous zero-latency response
+    const englishGreetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings"];
+    const romanUrduGreetings = ["salam", "assalam o alaikum", "assalamu alaikum", "aoa", "kese ho", "kaise ho", "kya haal hai", "kia hal hai"];
+    const urduGreetings = ["سلام", "ہیلو", "السلام علیکم", "کیسے ہو", "کیا حال ہے"];
+
+    if (englishGreetings.includes(cleanLower)) {
+      return NextResponse.json({
+        reply: "Hello! Welcome to **ALP Solar South Punjab**. I am your AI Solar Assistant.\n\nHow can I help you today? You can ask about:\n* **Solar Packages** (3kW to 20kW+ for homes & businesses)\n* **MEPCO Net Metering** & Green Metering approvals\n* **AlpSolarr Smart Inverters & Tier-1 Panels**\n* Or say **\"Calculate Solar Quote\"** to estimate your system size and savings!",
+        actions: [],
+        sources: [],
+      });
+    }
+
+    if (romanUrduGreetings.includes(cleanLower)) {
+      return NextResponse.json({
+        reply: "Walaikum Assalam! **ALP Solar South Punjab** mein khush-amdeed. Main aapka AI Solar Assistant hoon.\n\nAaj main aapki kis tarah madad kar sakta hoon? Aap pooch sakte hain:\n* **Solar Packages** (3kW se 20kW+ tak)\n* **MEPCO Net Metering** ka tareeqa kar\n* **AlpSolarr Inverters & Tier-1 Panels** ki details\n* Ya **\"Calculate Quote\"** bol kar apne ghar ka estimate hasil karein!",
+        actions: [],
+        sources: [],
+      });
+    }
+
+    if (urduGreetings.includes(cleanLower)) {
+      return NextResponse.json({
+        reply: "السلام علیکم! **ALP سولر ساؤتھ پنجاب** میں خوش آمدید۔ میں آپ کا AI سولر اسسٹنٹ ہوں۔\n\nمیں آپ کی کیا مدد کر سکتا ہوں؟ آپ درج ذیل کے بارے میں معلومات حاصل کر سکتے ہیں:\n* **سولر پیکجز** (3 کلو واٹ سے 20 کلو واٹ+ تک)\n* **MEPCO نیٹ میٹرنگ** کا طریقہ کار\n* **AlpSolarr انورٹرز اور ٹائر-1 سولر پینلز**\n* یا فوری طور پر اپنے گھر کے لیے سولر کوٹیشن کا تخمینہ لگائیں!",
+        actions: [],
+        sources: [],
+      });
+    }
 
     // 1. Generate 768-dim embedding for user query
     let queryEmbedding: number[] = [];
     try {
       queryEmbedding = await getEmbedding(userQuery);
     } catch (embErr) {
-      console.error("[Chat API] Embedding generation failed:", embErr);
+      console.warn("[Chat API] Embedding generation note:", embErr);
     }
 
-    // 2. Query Supabase vector similarity via match_documents RPC
+    // 2. Query Supabase vector similarity via match_documents RPC with reliable threshold
     let matchedContext = "";
     const matchedSources: Array<{ id: number; url: string; title: string; similarity: number }> = [];
 
     if (queryEmbedding.length === 768) {
       const { data: matchedDocs, error: rpcError } = await supabaseAdmin.rpc("match_documents", {
         query_embedding: queryEmbedding,
-        match_threshold: 0.7,
-        match_count: 5,
+        match_threshold: 0.35, // Balanced threshold for high recall even with typos/short queries
+        match_count: 6,
       });
 
       if (rpcError) {
-        console.warn("[Chat API] match_documents RPC error at 0.70 threshold:", rpcError.message);
+        console.warn("[Chat API] match_documents RPC note:", rpcError.message);
       } else if (matchedDocs && matchedDocs.length > 0) {
         matchedContext = matchedDocs
           .map(
@@ -164,30 +217,6 @@ export async function POST(req: NextRequest) {
             similarity: d.similarity,
           }))
         );
-      } else {
-        // Soft fallback search with threshold 0.50 if no match at 0.70
-        const { data: fallbackDocs } = await supabaseAdmin.rpc("match_documents", {
-          query_embedding: queryEmbedding,
-          match_threshold: 0.5,
-          match_count: 3,
-        });
-
-        if (fallbackDocs && fallbackDocs.length > 0) {
-          matchedContext = fallbackDocs
-            .map(
-              (doc: { url: string; title: string; content: string }) =>
-                `[Source: ${doc.title} (${doc.url})]\n${doc.content}`
-            )
-            .join("\n\n---\n\n");
-          matchedSources.push(
-            ...fallbackDocs.map((d: { id: number; url: string; title: string; similarity: number }) => ({
-              id: d.id,
-              url: d.url,
-              title: d.title,
-              similarity: d.similarity,
-            }))
-          );
-        }
       }
     }
 
@@ -216,11 +245,7 @@ ${matchedContext}
 ---
 USER QUERY:
 ${userQuery}`
-      : `CONTEXT CHUNKS FROM ALP SOLAR KNOWLEDGE BASE:
-(No relevant context chunks found for this query in the database)
-
----
-USER QUERY:
+      : `USER QUERY:
 ${userQuery}`;
 
     contents.push({
@@ -233,20 +258,19 @@ ${userQuery}`;
     const modelConfig: GenerateContentConfig = {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: CHAT_TOOLS,
-      temperature: 0.2,
+      temperature: 0.15,
     };
 
     try {
       rawResponse = await ai.models.generateContent({
-        model: CHAT_MODEL_PRIMARY,
+        model: CHAT_MODEL_FALLBACK, // gemini-2.5-flash for fastest latency & tool calling
         contents,
         config: modelConfig,
       });
     } catch {
-      // Fallback to secondary model if primary unavailable
       try {
         rawResponse = await ai.models.generateContent({
-          model: CHAT_MODEL_FALLBACK,
+          model: CHAT_MODEL_PRIMARY,
           contents,
           config: modelConfig,
         });
@@ -275,7 +299,7 @@ ${userQuery}`;
             payload: { path },
           });
           if (!replyText) {
-            replyText = `Navigating you to ${path}...`;
+            replyText = `Opening the ${path} page for you...`;
           }
         } else if (fnName === "calculate_solar_quote") {
           const quote = computeSolarQuote(fnArgs as { system_type: "ongrid" | "hybrid"; load_kw: number; ac_units: number });
@@ -285,7 +309,7 @@ ${userQuery}`;
             payload: { quote },
           });
           if (!replyText) {
-            replyText = `Here is your estimated ${quote.recommendedSystemSizeKw} kW ${quote.system_type.toUpperCase()} solar quotation:`;
+            replyText = `Here is your customized **${quote.recommendedSystemSizeKw} kW ${quote.system_type.toUpperCase()}** solar estimate:`;
           }
         }
       }
@@ -309,7 +333,7 @@ ${userQuery}`;
         error: (error as Error)?.message || "Internal chat error",
         actions: [],
       },
-      { status: 200 } // Return 200 with fallback message for smooth UI resilience
+      { status: 200 }
     );
   }
 }
