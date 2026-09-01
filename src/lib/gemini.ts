@@ -8,8 +8,8 @@ export const ai = new GoogleGenAI({ apiKey });
 export const EMBEDDING_MODEL_PRIMARY = "text-embedding-004";
 export const EMBEDDING_MODEL_FALLBACK = "gemini-embedding-001";
 
-export const CHAT_MODEL_PRIMARY = "gemini-1.5-flash";
-export const CHAT_MODEL_FALLBACK = "gemini-2.5-flash";
+export const CHAT_MODEL_PRIMARY = "gemini-2.5-flash";
+export const CHAT_MODEL_FALLBACK = "gemini-flash-latest";
 
 /**
  * Generates a 768-dimensional vector embedding for the input text.
