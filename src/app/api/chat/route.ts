@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
         }
       }
       // If sanitizedContents ends with a user message, pop it so current prompt is the user message
-      if (sanitizedContents.length > 0 && sanitizedContents[sanitizedContents.length - 1].role === "user") {
+      if (sanitizedContents.length > 0 && sanitizedContents[sanitizedContents.length - 1]?.role === "user") {
         sanitizedContents.pop();
       }
     }
